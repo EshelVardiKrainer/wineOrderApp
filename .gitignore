@@ -1,0 +1,10 @@
+# Wine Order App
+node_modules/
+dist/
+tmp/
+.nx/
+.env
+*.log
+.DS_Store
+coverage/
+.vite/
