@@ -1,0 +1,27 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Check Ports",
+			"type": "shell",
+			"command": "lsof -i :5173 -i :3000 2>/dev/null | grep LISTEN; echo '---'; curl -sS -o /dev/null -w 'Web:%{http_code}' http://localhost:5173/ 2>&1; echo ''; curl -sS -o /dev/null -w 'API:%{http_code}' http://localhost:3000/api/wines 2>&1; echo ''"
+		},
+		{
+			"label": "Debug Vite",
+			"type": "shell",
+			"command": "cd apps/web && npx vite --debug 2>&1 | head -40"
+		},
+		{
+			"label": "Start Vite",
+			"type": "shell",
+			"command": "cd apps/web && npx vite 2>&1",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify Servers",
+			"type": "shell",
+			"command": "curl -sS -o /dev/null -w 'Web: %{http_code}\\n' http://localhost:5173/ && curl -sS -o /dev/null -w 'API: %{http_code}\\n' http://localhost:3000/api/wines"
+		}
+	]
+}

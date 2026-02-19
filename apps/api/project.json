@@ -6,40 +6,16 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nx/webpack:webpack",
-      "outputs": ["{options.outputPath}"],
-      "defaultConfiguration": "production",
+      "executor": "nx:run-commands",
+      "outputs": ["dist/apps/api"],
       "options": {
-        "target": "node",
-        "compiler": "tsc",
-        "outputPath": "dist/apps/api",
-        "main": "apps/api/src/main.ts",
-        "tsConfig": "apps/api/tsconfig.app.json",
-        "webpackConfig": "apps/api/webpack.config.js",
-        "generatePackageJson": true
-      },
-      "configurations": {
-        "development": {},
-        "production": {
-          "optimization": true,
-          "extractLicenses": true,
-          "inspect": false
-        }
+        "command": "tsc -p apps/api/tsconfig.app.json --outDir dist/apps/api --rootDir ."
       }
     },
     "serve": {
-      "executor": "@nx/js:node",
-      "defaultConfiguration": "development",
+      "executor": "nx:run-commands",
       "options": {
-        "buildTarget": "api:build"
-      },
-      "configurations": {
-        "development": {
-          "buildTarget": "api:build:development"
-        },
-        "production": {
-          "buildTarget": "api:build:production"
-        }
+        "command": "ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json apps/api/src/main.ts"
       }
     },
     "generate-sdk": {
