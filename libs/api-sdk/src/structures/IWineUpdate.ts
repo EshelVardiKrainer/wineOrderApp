@@ -1,5 +1,6 @@
 export type IWineUpdate = {
   name?: undefined | string;
+  color?: "red" | "rose" | "white" | "orange";
   description?: undefined | string;
   imageUrl?: null | undefined | string;
   price?: undefined | number;

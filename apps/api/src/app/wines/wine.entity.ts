@@ -6,6 +6,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export type WineColor = 'red' | 'rose' | 'white' | 'orange';
+
 @Entity('wines')
 export class Wine {
   @PrimaryGeneratedColumn('uuid')
@@ -13,6 +15,9 @@ export class Wine {
 
   @Column()
   name!: string;
+
+  @Column({ type: 'varchar', default: 'red' })
+  color!: WineColor;
 
   @Column({ type: 'text', default: '' })
   description!: string;

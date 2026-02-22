@@ -12,6 +12,7 @@ export function GroupOrdersPage() {
   const [groupOrders, setGroupOrders] = useState<IGroupOrder[]>([]);
   const [sites, setSites] = useState<IShippingSite[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState('');
+  const [minimumAmount, setMinimumAmount] = useState('');
   const [error, setError] = useState('');
   const user = useAuthStore((s) => s.user);
   const isAdmin = user?.role === 'ADMIN';
@@ -34,8 +35,10 @@ export function GroupOrdersPage() {
     try {
       await api.post<IGroupOrder>('/group-orders', {
         shippingSiteId: selectedSiteId,
+        minimumAmount: minimumAmount ? Number(minimumAmount) : undefined,
       } satisfies IGroupOrderCreate);
       setSelectedSiteId('');
+      setMinimumAmount('');
       fetchOrders();
     } catch (err: any) {
       setError(err.message);
@@ -85,6 +88,16 @@ export function GroupOrdersPage() {
                 ))}
               </select>
             </div>
+            <div className="form-group" style={{ width: 180, marginBottom: 0 }}>
+              <label>Minimum (₪)</label>
+              <input
+                type="number"
+                min="0"
+                placeholder="e.g. 500"
+                value={minimumAmount}
+                onChange={(e) => setMinimumAmount(e.target.value)}
+              />
+            </div>
             <button
               className="btn btn--primary"
               disabled={!selectedSiteId}
@@ -104,6 +117,7 @@ export function GroupOrdersPage() {
             <tr>
               <th>Site</th>
               <th>Status</th>
+              <th>Minimum</th>
               <th>Participants</th>
               <th>Created</th>
               <th>Actions</th>
@@ -121,6 +135,11 @@ export function GroupOrdersPage() {
                   <span className={`badge badge--${go.status}`}>
                     {go.status}
                   </span>
+                </td>
+                <td>
+                  {go.minimumAmount > 0
+                    ? `₪${go.minimumAmount}`
+                    : <span style={{ color: '#aaa' }}>—</span>}
                 </td>
                 <td>{go.participants.length}</td>
                 <td>{new Date(go.createdAt).toLocaleDateString()}</td>

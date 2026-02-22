@@ -6,6 +6,7 @@ export type IGroupOrder = {
   shippingSiteId: string;
   shippingSite: IShippingSite;
   status: "open" | "closed" | "submitted" | "shipped";
+  minimumAmount: number;
   createdAt: string;
   closedAt: null | string;
   participants: IGroupOrderParticipant[];

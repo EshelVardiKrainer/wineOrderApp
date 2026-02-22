@@ -6,6 +6,7 @@ import type {
   IWineListResponse,
   IShippingSite,
   IShippingSiteCreate,
+  WineColor,
 } from '@wine-order-app/shared-types';
 
 export function AdminPage() {
@@ -40,6 +41,7 @@ function WinesAdmin() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<IWineCreate>({
     name: '',
+    color: 'red',
     description: '',
     price: 0,
     region: '',
@@ -62,7 +64,7 @@ function WinesAdmin() {
     setError('');
     try {
       await api.post<IWine>('/wines', form);
-      setForm({ name: '', description: '', price: 0, region: '', vintage: 2024, stock: 0 });
+      setForm({ name: '', color: 'red', description: '', price: 0, region: '', vintage: 2024, stock: 0 });
       setShowForm(false);
       fetchWines();
     } catch (err: any) {
@@ -99,6 +101,15 @@ function WinesAdmin() {
               <input value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} required />
             </div>
             <div className="form-group">
+              <label>Color</label>
+              <select value={form.color || 'red'} onChange={(e) => setForm({ ...form, color: e.target.value as WineColor })}>
+                <option value="red">🌹 Red</option>
+                <option value="rose">🦩 Rosé</option>
+                <option value="white">⚪️ White</option>
+                <option value="orange">🐅 Orange</option>
+              </select>
+            </div>
+            <div className="form-group">
               <label>Price (₪)</label>
               <input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} required />
             </div>
@@ -123,6 +134,7 @@ function WinesAdmin() {
         <thead>
           <tr>
             <th>Name</th>
+            <th>Color</th>
             <th>Region</th>
             <th>Vintage</th>
             <th>Price</th>
@@ -134,6 +146,7 @@ function WinesAdmin() {
           {wines.map((w) => (
             <tr key={w.id}>
               <td>{w.name}</td>
+              <td>{w.color === 'red' ? '🌹' : w.color === 'rose' ? '🦩' : w.color === 'white' ? '⚪️' : '🐅'}</td>
               <td>{w.region}</td>
               <td>{w.vintage}</td>
               <td>₪{w.price.toFixed(2)}</td>

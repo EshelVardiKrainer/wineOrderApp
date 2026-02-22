@@ -9,6 +9,7 @@ export interface IGroupOrder {
   shippingSiteId: string;
   shippingSite: IShippingSite;
   status: GroupOrderStatus;
+  minimumAmount: number;
   createdAt: string;
   closedAt: string | null;
   participants: IGroupOrderParticipant[];
@@ -16,6 +17,7 @@ export interface IGroupOrder {
 
 export interface IGroupOrderCreate {
   shippingSiteId: string;
+  minimumAmount?: number;
 }
 
 export interface IGroupOrderParticipant {
@@ -49,6 +51,8 @@ export interface IGroupOrderSummary {
   groupOrderId: string;
   shippingSite: IShippingSite;
   status: GroupOrderStatus;
+  minimumAmount: number;
+  minimumReached: boolean;
   totalParticipants: number;
   totalBottles: number;
   totalPrice: number;

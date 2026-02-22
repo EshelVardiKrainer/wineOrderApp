@@ -30,6 +30,9 @@ export class GroupOrder {
   @Column({ type: 'varchar', default: 'open' })
   status!: GroupOrderStatus;
 
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  minimumAmount!: number;
+
   @CreateDateColumn()
   createdAt!: Date;
 

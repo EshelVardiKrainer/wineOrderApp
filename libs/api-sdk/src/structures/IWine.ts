@@ -1,6 +1,7 @@
 export type IWine = {
   id: string;
   name: string;
+  color: "red" | "rose" | "white" | "orange";
   description: string;
   imageUrl: null | string;
   price: number;

@@ -66,6 +66,7 @@ async function seed() {
     // אדום 🌹
     {
       name: 'אמפלוס פוס של זכריאס (אדום, יוון)',
+      color: 'red',
       description: 'אדום ימתיכוני לשלוקים גדולים שאפשר לשתות צונן. 70% אגיורגיטיקו ו-30% קברנה סובניון. יוון (נמאה).',
       price: 45,
       region: 'Nemea, Greece',
@@ -75,6 +76,7 @@ async function seed() {
     },
     {
       name: 'רפושק של סנתומאס (אדום, סלובניה)',
+      color: 'red',
       description: 'רפושק (Refosk) של סנתומאס, סלובניה.',
       price: 55,
       region: 'Slovenia',
@@ -84,6 +86,7 @@ async function seed() {
     },
     {
       name: 'פינו נואר של סטובי (אדום, מקדוניה)',
+      color: 'red',
       description: 'פינו נואר של סטובי, מקדוניה. יין קליל וארומטי.',
       price: 45,
       region: 'Macedonia',
@@ -94,6 +97,7 @@ async function seed() {
     // רוזה 🦩
     {
       name: 'אנה של גונץ (רוזה, סלובניה)',
+      color: 'rose',
       description: 'אנה של גונץ (Gonc Anna), סלובניה. רוזה מרענן.',
       price: 54,
       region: 'Slovenia',
@@ -103,6 +107,7 @@ async function seed() {
     },
     {
       name: 'זכריאס רוזה (רוזה, יוון)',
+      color: 'rose',
       description: 'זכריאס אגיורגיטיקו רוזה, יוון.',
       price: 55,
       region: 'Greece',
@@ -113,6 +118,7 @@ async function seed() {
     // לבן ⚪️
     {
       name: 'גונץ הקטן (לבן, סלובניה)',
+      color: 'white',
       description: 'The Little One by Gonc, סלובניה.',
       price: 55,
       region: 'Slovenia',
@@ -122,6 +128,7 @@ async function seed() {
     },
     {
       name: 'גרייפ אבדקשן לבן (לבן, סלובניה)',
+      color: 'white',
       description: 'Grape Abduction White, סלובניה. מורכב מחמישה זנים מקומיים.',
       price: 60,
       region: 'Slovenia',
@@ -131,6 +138,7 @@ async function seed() {
     },
     {
       name: 'סטירייה הילס מוסקט (לבן חצי מתוק, סלובניה)',
+      color: 'white',
       description: 'Kobal Styria Hills Muscat, סלובניה. חצי מתוק, ארומטי ומרענן.',
       price: 50,
       region: 'Slovenia',
@@ -140,6 +148,7 @@ async function seed() {
     },
     {
       name: 'מוסקופילרו של זכריאס (לבן, יוון)',
+      color: 'white',
       description: 'Zacharias Moschofilero, יוון. יין לבן ארומטי מאוד עם חמיצות נעימה.',
       price: 62,
       region: 'Greece',
@@ -149,6 +158,7 @@ async function seed() {
     },
     {
       name: 'סטובי סמדרבקה (לבן, מקדוניה)',
+      color: 'white',
       description: 'Stobi Smederevka, מקדוניה. יין קליל ופירותי.',
       price: 45,
       region: 'Macedonia',
@@ -158,6 +168,7 @@ async function seed() {
     },
     {
       name: 'רבולה של שצ\'ורק (לבן, סלובניה)',
+      color: 'white',
       description: 'Scurek Rebula, סלובניה. יין רענן עם מינרליות בולטת.',
       price: 75,
       region: 'Slovenia',
@@ -168,6 +179,7 @@ async function seed() {
     // כתום 🐅
     {
       name: 'גרייפ אבדקשן כתום (כתום, סלובניה)',
+      color: 'orange',
       description: 'Grape Abduction Orange, סלובניה. יין כתום עם ארומות של קליפות תפוז ותבלינים.',
       price: 60,
       region: 'Slovenia',
@@ -177,6 +189,7 @@ async function seed() {
     },
     {
       name: 'שטקר/שצ\'ורק מלבזיה (כתום, סלובניה)',
+      color: 'orange',
       description: 'Scurek Malvazija, סלובניה. יין כתום עשיר ומורכב.',
       price: 100,
       region: 'Slovenia',

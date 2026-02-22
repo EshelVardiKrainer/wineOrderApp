@@ -24,6 +24,9 @@ export class WinesService {
 
     const qb = this.wineRepo.createQueryBuilder('wine');
 
+    if (filter.color) {
+      qb.andWhere('wine.color = :color', { color: filter.color });
+    }
     if (filter.region) {
       qb.andWhere('wine.region ILIKE :region', {
         region: `%${filter.region}%`,
@@ -51,7 +54,9 @@ export class WinesService {
       });
     }
 
-    qb.orderBy('wine.name', 'ASC').skip(skip).take(limit);
+    qb.orderBy("CASE wine.color WHEN 'red' THEN 1 WHEN 'rose' THEN 2 WHEN 'white' THEN 3 WHEN 'orange' THEN 4 ELSE 5 END", 'ASC')
+      .addOrderBy('wine.name', 'ASC')
+      .skip(skip).take(limit);
 
     const [items, total] = await qb.getManyAndCount();
 
@@ -92,6 +97,7 @@ export class WinesService {
     return {
       id: wine.id,
       name: wine.name,
+      color: wine.color,
       description: wine.description,
       imageUrl: wine.imageUrl,
       price: Number(wine.price),

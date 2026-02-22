@@ -33,6 +33,7 @@ export class CartService {
       wine: {
         id: item.wine.id,
         name: item.wine.name,
+        color: item.wine.color,
         description: item.wine.description,
         imageUrl: item.wine.imageUrl,
         price: Number(item.wine.price),

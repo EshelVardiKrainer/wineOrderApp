@@ -50,6 +50,7 @@ export class GroupOrdersService {
     const go = this.groupOrderRepo.create({
       shippingSiteId: input.shippingSiteId,
       status: 'open',
+      minimumAmount: input.minimumAmount ?? 0,
     });
     const saved = await this.groupOrderRepo.save(go);
     return this.findById(saved.id);
@@ -291,10 +292,13 @@ export class GroupOrdersService {
       0,
     );
 
+    const minimumAmount = Number(go.minimumAmount) || 0;
     return {
       groupOrderId: go.id,
       shippingSite: go.shippingSite,
       status: go.status,
+      minimumAmount,
+      minimumReached: minimumAmount <= 0 || totalPrice >= minimumAmount,
       totalParticipants: go.participants.length,
       totalBottles,
       totalPrice: Math.round(totalPrice * 100) / 100,
@@ -361,6 +365,7 @@ export class GroupOrdersService {
   private toGroupOrderDto = (go: GroupOrder): IGroupOrder => ({
     id: go.id,
     shippingSiteId: go.shippingSiteId,
+    minimumAmount: Number(go.minimumAmount) || 0,
     shippingSite: {
       id: go.shippingSite.id,
       name: go.shippingSite.name,
@@ -399,6 +404,7 @@ export class GroupOrdersService {
     wine: {
       id: item.wine.id,
       name: item.wine.name,
+      color: item.wine.color,
       description: item.wine.description,
       imageUrl: item.wine.imageUrl,
       price: Number(item.wine.price),

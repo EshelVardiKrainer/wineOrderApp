@@ -54,6 +54,38 @@ export function GroupOrderDetailPage() {
             <strong>₪{summary.totalPrice.toFixed(2)}</strong> total value
           </p>
 
+          {summary.minimumAmount > 0 && (
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontWeight: 600 }}>
+                  {summary.minimumReached ? '✅' : '⏳'} Minimum: ₪{summary.minimumAmount}
+                </span>
+                <span style={{ fontWeight: 600 }}>
+                  ₪{summary.totalPrice.toFixed(2)} / ₪{summary.minimumAmount}
+                </span>
+              </div>
+              <div style={{
+                height: 12,
+                background: '#e0e0e0',
+                borderRadius: 6,
+                overflow: 'hidden',
+              }}>
+                <div style={{
+                  height: '100%',
+                  width: `${Math.min(100, (summary.totalPrice / summary.minimumAmount) * 100)}%`,
+                  background: summary.minimumReached ? '#4caf50' : '#ff9800',
+                  borderRadius: 6,
+                  transition: 'width 0.3s ease',
+                }} />
+              </div>
+              <p style={{ fontSize: '0.85rem', color: summary.minimumReached ? '#4caf50' : '#ff9800', marginTop: 4, fontWeight: 600 }}>
+                {summary.minimumReached
+                  ? 'Minimum reached! ✓'
+                  : `₪${(summary.minimumAmount - summary.totalPrice).toFixed(2)} more needed`}
+              </p>
+            </div>
+          )}
+
           {summary.wineAggregation.length > 0 && (
             <table>
               <thead>

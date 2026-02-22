@@ -1,6 +1,9 @@
+export type WineColor = 'red' | 'rose' | 'white' | 'orange';
+
 export interface IWine {
   id: string;
   name: string;
+  color: WineColor;
   description: string;
   imageUrl: string | null;
   price: number;
@@ -13,6 +16,7 @@ export interface IWine {
 
 export interface IWineCreate {
   name: string;
+  color?: WineColor;
   description: string;
   imageUrl?: string | null;
   price: number;
@@ -23,6 +27,7 @@ export interface IWineCreate {
 
 export interface IWineUpdate {
   name?: string;
+  color?: WineColor;
   description?: string;
   imageUrl?: string | null;
   price?: number;
@@ -32,6 +37,7 @@ export interface IWineUpdate {
 }
 
 export interface IWineFilter {
+  color?: WineColor;
   region?: string;
   minVintage?: number;
   maxVintage?: number;
