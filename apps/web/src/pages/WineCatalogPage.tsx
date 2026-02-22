@@ -5,7 +5,7 @@ import { useAuthStore } from '../stores/auth.store';
 import { useCartStore } from '../stores/cart.store';
 
 const COLOR_OPTIONS: { value: WineColor | ''; label: string; emoji: string }[] = [
-  { value: '', label: 'All', emoji: '🍷' },
+  { value: '', label: 'All Wines', emoji: '🍷' },
   { value: 'red', label: 'Red', emoji: '🌹' },
   { value: 'rose', label: 'Rosé', emoji: '🦩' },
   { value: 'white', label: 'White', emoji: '⚪️' },
@@ -13,10 +13,10 @@ const COLOR_OPTIONS: { value: WineColor | ''; label: string; emoji: string }[] =
 ];
 
 const COLOR_BADGE: Record<string, { bg: string; text: string; label: string }> = {
-  red: { bg: '#fde8e8', text: '#b91c1c', label: '🌹 אדום' },
-  rose: { bg: '#fce7f3', text: '#be185d', label: '🦩 רוזה' },
-  white: { bg: '#f0fdf4', text: '#15803d', label: '⚪️ לבן' },
-  orange: { bg: '#fff7ed', text: '#c2410c', label: '🐅 כתום' },
+  red: { bg: '#fde8e8', text: '#b91c1c', label: '🌹 Red' },
+  rose: { bg: '#fce7f3', text: '#be185d', label: '🦩 Rosé' },
+  white: { bg: '#f0fdf4', text: '#15803d', label: '⚪️ White' },
+  orange: { bg: '#fff7ed', text: '#c2410c', label: '🐅 Orange' },
 };
 
 export function WineCatalogPage() {
@@ -26,6 +26,7 @@ export function WineCatalogPage() {
   const [search, setSearch] = useState('');
   const [region, setRegion] = useState('');
   const [color, setColor] = useState<WineColor | ''>('');
+  const [addingId, setAddingId] = useState<string | null>(null);
   const user = useAuthStore((s) => s.user);
   const addItem = useCartStore((s) => s.addItem);
 
@@ -47,18 +48,23 @@ export function WineCatalogPage() {
   }, [page, search, region, color]);
 
   const handleAddToCart = async (wine: IWine) => {
+    setAddingId(wine.id);
     await addItem({ wineId: wine.id, quantity: 1 });
+    setTimeout(() => setAddingId(null), 600);
   };
 
   return (
-    <>
-      <h1>🍷 Wine Catalog</h1>
+    <div className="animate-in">
+      <div className="page-header">
+        <h1>Wine Catalog</h1>
+        <p>Explore our curated collection of fine wines</p>
+      </div>
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+      <div className="filter-pills">
         {COLOR_OPTIONS.map((opt) => (
           <button
             key={opt.value}
-            className={`btn btn--small ${color === opt.value ? 'btn--primary' : 'btn--secondary'}`}
+            className={`filter-pill ${color === opt.value ? 'filter-pill--active' : ''}`}
             onClick={() => { setColor(opt.value); setPage(1); }}
           >
             {opt.emoji} {opt.label}
@@ -69,41 +75,34 @@ export function WineCatalogPage() {
       <div className="filters">
         <input
           type="text"
-          placeholder="Search wines..."
+          placeholder="🔍  Search wines..."
           value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
         />
         <input
           type="text"
-          placeholder="Filter by region..."
+          placeholder="📍  Filter by region..."
           value={region}
-          onChange={(e) => {
-            setRegion(e.target.value);
-            setPage(1);
-          }}
+          onChange={(e) => { setRegion(e.target.value); setPage(1); }}
         />
-        <span style={{ alignSelf: 'center', color: '#888' }}>
+        <span className="text-muted text-sm" style={{ marginLeft: 'auto' }}>
           {total} wine{total !== 1 ? 's' : ''} found
         </span>
       </div>
 
-      <div className="wine-grid">
+      <div className="wine-grid stagger">
         {wines.map((wine) => (
           <div key={wine.id} className="wine-card">
             {COLOR_BADGE[wine.color] && (
-              <span style={{
-                display: 'inline-block',
-                background: COLOR_BADGE[wine.color].bg,
-                color: COLOR_BADGE[wine.color].text,
-                padding: '2px 10px',
-                borderRadius: 12,
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                marginBottom: 6,
-              }}>
+              <span
+                className="color-badge"
+                style={{
+                  background: COLOR_BADGE[wine.color].bg,
+                  color: COLOR_BADGE[wine.color].text,
+                  marginBottom: 8,
+                  alignSelf: 'flex-start',
+                }}
+              >
                 {COLOR_BADGE[wine.color].label}
               </span>
             )}
@@ -112,28 +111,31 @@ export function WineCatalogPage() {
               {wine.region} · <span className="vintage">{wine.vintage}</span>
             </p>
             <p className="price">₪{wine.price.toFixed(2)}</p>
-            <p style={{ fontSize: '0.85rem', color: '#666' }}>
-              {wine.description}
-            </p>
-            <p style={{ fontSize: '0.8rem', color: '#999' }}>
-              {wine.stock} in stock
-            </p>
-            {user && (
-              <button
-                className="btn btn--primary btn--small"
-                onClick={() => handleAddToCart(wine)}
-              >
-                Add to Cart
-              </button>
-            )}
+            <p className="wine-description">{wine.description}</p>
+            <div className="wine-card-footer">
+              <span className="wine-stock">
+                {wine.stock > 0 ? `${wine.stock} in stock` : 'Out of stock'}
+              </span>
+              {user && wine.stock > 0 && (
+                <button
+                  className="btn btn--primary btn--small"
+                  onClick={() => handleAddToCart(wine)}
+                  disabled={addingId === wine.id}
+                >
+                  {addingId === wine.id ? '✓ Added' : 'Add to Cart'}
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>
 
       {wines.length === 0 && (
-        <p style={{ textAlign: 'center', color: '#888', marginTop: '2rem' }}>
-          No wines found. Try adjusting your filters.
-        </p>
+        <div className="empty-state">
+          <span className="empty-state-icon">🔍</span>
+          <h3>No wines found</h3>
+          <p>Try adjusting your search or filters to find what you're looking for.</p>
+        </div>
       )}
 
       {total > 20 && (
@@ -141,6 +143,7 @@ export function WineCatalogPage() {
           style={{
             display: 'flex',
             justifyContent: 'center',
+            alignItems: 'center',
             gap: '1rem',
             marginTop: '2rem',
           }}
@@ -150,9 +153,9 @@ export function WineCatalogPage() {
             disabled={page <= 1}
             onClick={() => setPage((p) => p - 1)}
           >
-            Previous
+            ← Previous
           </button>
-          <span style={{ alignSelf: 'center' }}>
+          <span className="text-muted text-sm">
             Page {page} of {Math.ceil(total / 20)}
           </span>
           <button
@@ -160,10 +163,10 @@ export function WineCatalogPage() {
             disabled={page >= Math.ceil(total / 20)}
             onClick={() => setPage((p) => p + 1)}
           >
-            Next
+            Next →
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 }

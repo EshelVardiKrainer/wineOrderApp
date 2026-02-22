@@ -58,29 +58,27 @@ export function GroupOrdersPage() {
   };
 
   return (
-    <>
-      <h1>📦 Group Orders</h1>
+    <div className="animate-in">
+      <div className="page-header">
+        <h1>Group Orders</h1>
+        <p>Manage and participate in group wine orders</p>
+      </div>
 
       {error && <div className="error-msg">{error}</div>}
 
       {isAdmin && (
-        <div
-          style={{
-            marginBottom: '2rem',
-            padding: '1rem',
-            background: '#f9f9f9',
-            borderRadius: 12,
-          }}
-        >
-          <h3>Open New Group Order</h3>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'end' }}>
-            <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+        <div className="section-panel" style={{ marginBottom: 'var(--space-xl)' }}>
+          <div className="section-header">
+            <h3 style={{ margin: 0 }}>Open New Group Order</h3>
+          </div>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <div className="form-group" style={{ flex: 1, minWidth: 200, marginBottom: 0 }}>
               <label>Shipping Site</label>
               <select
                 value={selectedSiteId}
                 onChange={(e) => setSelectedSiteId(e.target.value)}
               >
-                <option value="">-- Select a site --</option>
+                <option value="">Select a site...</option>
                 {sites.map((site) => (
                   <option key={site.id} value={site.id}>
                     {site.name} — {site.city}
@@ -110,76 +108,88 @@ export function GroupOrdersPage() {
       )}
 
       {groupOrders.length === 0 ? (
-        <p style={{ color: '#888' }}>No group orders yet.</p>
+        <div className="empty-state">
+          <span className="empty-state-icon">📦</span>
+          <h3>No group orders yet</h3>
+          <p>Group orders will appear here once they are created.</p>
+        </div>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Site</th>
-              <th>Status</th>
-              <th>Minimum</th>
-              <th>Participants</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {groupOrders.map((go) => (
-              <tr key={go.id}>
-                <td>
-                  <strong>{go.shippingSite.name}</strong>
-                  <br />
-                  <small style={{ color: '#888' }}>{go.shippingSite.city}</small>
-                </td>
-                <td>
-                  <span className={`badge badge--${go.status}`}>
-                    {go.status}
-                  </span>
-                </td>
-                <td>
-                  {go.minimumAmount > 0
-                    ? `₪${go.minimumAmount}`
-                    : <span style={{ color: '#aaa' }}>—</span>}
-                </td>
-                <td>{go.participants.length}</td>
-                <td>{new Date(go.createdAt).toLocaleDateString()}</td>
-                <td style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <Link
-                    to={`/group-orders/${go.id}`}
-                    className="btn btn--secondary btn--small"
-                  >
-                    View
-                  </Link>
-                  {isAdmin && go.status === 'open' && (
-                    <button
-                      className="btn btn--danger btn--small"
-                      onClick={() => handleStatusChange(go.id, 'close')}
-                    >
-                      Close
-                    </button>
-                  )}
-                  {isAdmin && go.status === 'closed' && (
-                    <button
-                      className="btn btn--primary btn--small"
-                      onClick={() => handleStatusChange(go.id, 'submit')}
-                    >
-                      Submit
-                    </button>
-                  )}
-                  {isAdmin && go.status === 'submitted' && (
-                    <button
-                      className="btn btn--success btn--small"
-                      onClick={() => handleStatusChange(go.id, 'ship')}
-                    >
-                      Mark Shipped
-                    </button>
-                  )}
-                </td>
+        <div className="section-panel">
+          <table>
+            <thead>
+              <tr>
+                <th>Site</th>
+                <th>Status</th>
+                <th>Minimum</th>
+                <th>Participants</th>
+                <th>Created</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {groupOrders.map((go) => (
+                <tr key={go.id}>
+                  <td>
+                    <strong style={{ color: 'var(--gray-900)' }}>{go.shippingSite.name}</strong>
+                    <br />
+                    <span className="text-muted text-sm">{go.shippingSite.city}</span>
+                  </td>
+                  <td>
+                    <span className={`badge badge--${go.status}`}>
+                      {go.status}
+                    </span>
+                  </td>
+                  <td>
+                    {go.minimumAmount > 0
+                      ? <span style={{ fontWeight: 600 }}>₪{go.minimumAmount}</span>
+                      : <span className="text-muted">—</span>}
+                  </td>
+                  <td>
+                    <span style={{ fontWeight: 600 }}>{go.participants.length}</span>
+                  </td>
+                  <td className="text-muted text-sm">
+                    {new Date(go.createdAt).toLocaleDateString()}
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <Link
+                        to={`/group-orders/${go.id}`}
+                        className="btn btn--secondary btn--small"
+                      >
+                        View
+                      </Link>
+                      {isAdmin && go.status === 'open' && (
+                        <button
+                          className="btn btn--danger btn--small"
+                          onClick={() => handleStatusChange(go.id, 'close')}
+                        >
+                          Close
+                        </button>
+                      )}
+                      {isAdmin && go.status === 'closed' && (
+                        <button
+                          className="btn btn--primary btn--small"
+                          onClick={() => handleStatusChange(go.id, 'submit')}
+                        >
+                          Submit
+                        </button>
+                      )}
+                      {isAdmin && go.status === 'submitted' && (
+                        <button
+                          className="btn btn--success btn--small"
+                          onClick={() => handleStatusChange(go.id, 'ship')}
+                        >
+                          Mark Shipped
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-    </>
+    </div>
   );
 }

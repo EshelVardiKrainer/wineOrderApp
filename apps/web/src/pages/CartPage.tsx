@@ -7,7 +7,7 @@ import type {
   IGroupOrder,
   IGroupOrderParticipant,
 } from '@wine-order-app/shared-types';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export function CartPage() {
   const cart = useCartStore((s) => s.cart);
@@ -28,7 +28,6 @@ export function CartPage() {
     api.get<IShippingSite[]>('/shipping-sites').then(setSites);
   }, [fetchCart]);
 
-  // When user selects a site, check for open group order
   useEffect(() => {
     if (!selectedSiteId) {
       setOpenGroupOrder(null);
@@ -58,104 +57,116 @@ export function CartPage() {
     }
   };
 
-  if (!cart) return <p>Loading cart...</p>;
+  if (!cart) return <div className="spinner" />;
 
   return (
-    <>
-      <h1>🛒 Your Cart</h1>
+    <div className="animate-in">
+      <div className="page-header">
+        <h1>Shopping Cart</h1>
+        <p>Review your selections before placing an order</p>
+      </div>
 
       {error && <div className="error-msg">{error}</div>}
 
       {cart.items.length === 0 ? (
-        <p>Your cart is empty. Browse the <a href="/wines">catalog</a> to add wines.</p>
+        <div className="empty-state">
+          <span className="empty-state-icon">🛒</span>
+          <h3>Your cart is empty</h3>
+          <p>Browse our catalog to discover and add wines you love.</p>
+          <Link to="/wines" className="btn btn--primary" style={{ marginTop: '1rem' }}>
+            Browse Catalog
+          </Link>
+        </div>
       ) : (
         <>
-          <table>
-            <thead>
-              <tr>
-                <th>Wine</th>
-                <th>Price</th>
-                <th>Qty</th>
-                <th>Subtotal</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {cart.items.map((item) => (
-                <tr key={item.id}>
-                  <td>
-                    <strong>{item.wine.name}</strong>
-                    <br />
-                    <small style={{ color: '#888' }}>
-                      {item.wine.region} · {item.wine.vintage}
-                    </small>
-                  </td>
-                  <td>₪{item.wine.price.toFixed(2)}</td>
-                  <td style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <button
-                      className="btn btn--secondary btn--small"
-                      onClick={() =>
-                        updateItem(item.id, { quantity: item.quantity - 1 })
-                      }
-                    >
-                      −
-                    </button>
-                    <span>{item.quantity}</span>
-                    <button
-                      className="btn btn--secondary btn--small"
-                      onClick={() =>
-                        updateItem(item.id, { quantity: item.quantity + 1 })
-                      }
-                    >
-                      +
-                    </button>
-                  </td>
-                  <td>₪{(item.wine.price * item.quantity).toFixed(2)}</td>
-                  <td>
-                    <button
-                      className="btn btn--danger btn--small"
-                      onClick={() => removeItem(item.id)}
-                    >
-                      Remove
-                    </button>
-                  </td>
+          <div className="section-panel">
+            <table>
+              <thead>
+                <tr>
+                  <th>Wine</th>
+                  <th>Price</th>
+                  <th>Quantity</th>
+                  <th>Subtotal</th>
+                  <th style={{ width: 60 }}></th>
                 </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colSpan={3} style={{ textAlign: 'right', fontWeight: 700 }}>
-                  Total:
-                </td>
-                <td style={{ fontWeight: 700, fontSize: '1.1rem' }}>
-                  ₪{cart.totalPrice.toFixed(2)}
-                </td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
+              </thead>
+              <tbody>
+                {cart.items.map((item) => (
+                  <tr key={item.id}>
+                    <td>
+                      <strong style={{ color: 'var(--gray-900)' }}>{item.wine.name}</strong>
+                      <br />
+                      <span className="text-muted text-sm">
+                        {item.wine.region} · {item.wine.vintage}
+                      </span>
+                    </td>
+                    <td>₪{item.wine.price.toFixed(2)}</td>
+                    <td>
+                      <div className="qty-control">
+                        <button
+                          onClick={() =>
+                            updateItem(item.id, { quantity: item.quantity - 1 })
+                          }
+                        >
+                          −
+                        </button>
+                        <span>{item.quantity}</span>
+                        <button
+                          onClick={() =>
+                            updateItem(item.id, { quantity: item.quantity + 1 })
+                          }
+                        >
+                          +
+                        </button>
+                      </div>
+                    </td>
+                    <td style={{ fontWeight: 700, color: 'var(--wine-700)' }}>
+                      ₪{(item.wine.price * item.quantity).toFixed(2)}
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn--ghost btn--small"
+                        style={{ color: 'var(--danger-500)' }}
+                        onClick={() => removeItem(item.id)}
+                        title="Remove"
+                      >
+                        ✕
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colSpan={3} style={{ textAlign: 'right', fontWeight: 700, fontSize: '1rem' }}>
+                    Total
+                  </td>
+                  <td style={{ fontWeight: 800, fontSize: '1.15rem', color: 'var(--wine-700)' }}>
+                    ₪{cart.totalPrice.toFixed(2)}
+                  </td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
 
-          <div
-            style={{
-              marginTop: '2rem',
-              padding: '1.5rem',
-              background: '#f9f9f9',
-              borderRadius: 12,
-            }}
-          >
-            <h3>Enroll in a Group Order</h3>
-            <p style={{ color: '#666', fontSize: '0.9rem' }}>
-              Select a shipping site to join its active group order. Your cart
-              items will be committed to the group.
-            </p>
+          <div className="section-panel" style={{ marginTop: 'var(--space-lg)' }}>
+            <div className="section-header">
+              <div>
+                <h3 style={{ margin: 0 }}>Enroll in a Group Order</h3>
+                <p className="text-muted text-sm" style={{ marginTop: 4 }}>
+                  Select a shipping site to join its active group order
+                </p>
+              </div>
+            </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ maxWidth: 400 }}>
               <label>Shipping Site</label>
               <select
                 value={selectedSiteId}
                 onChange={(e) => setSelectedSiteId(e.target.value)}
               >
-                <option value="">-- Select a site --</option>
+                <option value="">Select a shipping site...</option>
                 {sites.map((site) => (
                   <option key={site.id} value={site.id}>
                     {site.name} — {site.city}
@@ -165,18 +176,18 @@ export function CartPage() {
             </div>
 
             {selectedSiteId && !openGroupOrder && (
-              <p style={{ color: '#856404' }}>
-                ⚠️ No open group order for this site right now.
-              </p>
+              <div className="info-box info-box--warning">
+                ⚠️ No open group order at this site right now.
+              </div>
             )}
 
             {openGroupOrder && (
-              <div>
-                <p style={{ color: '#155724' }}>
-                  ✅ Open group order found ({openGroupOrder.participants.length}{' '}
+              <div style={{ marginTop: 'var(--space-md)' }}>
+                <div className="info-box info-box--success" style={{ marginBottom: 'var(--space-md)' }}>
+                  ✅ Open group order found — {openGroupOrder.participants.length}{' '}
                   participant{openGroupOrder.participants.length !== 1 ? 's' : ''}{' '}
-                  enrolled)
-                </p>
+                  already enrolled
+                </div>
                 <button
                   className="btn btn--success"
                   disabled={enrolling}
@@ -189,6 +200,6 @@ export function CartPage() {
           </div>
         </>
       )}
-    </>
+    </div>
   );
 }

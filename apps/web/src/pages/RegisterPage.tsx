@@ -20,55 +20,64 @@ export function RegisterPage() {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '2rem auto' }}>
-      <h1>Register</h1>
-      {error && <div className="error-msg">{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-          />
-        </div>
-        <div className="form-group">
-          <label>Account Type</label>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as 'CUSTOMER' | 'RETAIL')}
-          >
-            <option value="CUSTOMER">Customer</option>
-            <option value="RETAIL">Retail Buyer</option>
-          </select>
-        </div>
-        <button className="btn btn--primary" disabled={isLoading}>
-          {isLoading ? 'Creating account...' : 'Register'}
-        </button>
-      </form>
-      <p style={{ marginTop: '1rem' }}>
-        Already have an account? <Link to="/login">Login</Link>
-      </p>
+    <div className="auth-wrapper">
+      <div className="auth-card animate-in">
+        <h1>Create Account</h1>
+        <p className="auth-subtitle">Join the wine market community</p>
+
+        {error && <div className="error-msg">{error}</div>}
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Full Name</label>
+            <input
+              type="text"
+              placeholder="John Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              placeholder="At least 6 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+          </div>
+          <div className="form-group">
+            <label>Account Type</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as 'CUSTOMER' | 'RETAIL')}
+            >
+              <option value="CUSTOMER">Customer</option>
+              <option value="RETAIL">Retail Buyer</option>
+            </select>
+          </div>
+          <button className="btn btn--primary" disabled={isLoading}>
+            {isLoading ? 'Creating account...' : 'Create Account'}
+          </button>
+        </form>
+
+        <p className="auth-footer">
+          Already have an account? <Link to="/login">Sign in</Link>
+        </p>
+      </div>
     </div>
   );
 }

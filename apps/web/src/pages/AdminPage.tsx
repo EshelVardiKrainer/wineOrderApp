@@ -14,37 +14,41 @@ export function AdminPage() {
   const [tab, setTab] = useState<'orders' | 'wines' | 'sites'>('orders');
 
   return (
-    <>
-      <h1>⚙️ Admin Panel</h1>
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+    <div className="animate-in">
+      <div className="page-header">
+        <h1>Admin Panel</h1>
+        <p>Manage orders, wines, and shipping sites</p>
+      </div>
+
+      <div className="tab-bar">
         <button
-          className={`btn ${tab === 'orders' ? 'btn--primary' : 'btn--secondary'}`}
+          className={`tab-item ${tab === 'orders' ? 'tab-item--active' : ''}`}
           onClick={() => setTab('orders')}
         >
           All Orders
         </button>
         <button
-          className={`btn ${tab === 'wines' ? 'btn--primary' : 'btn--secondary'}`}
+          className={`tab-item ${tab === 'wines' ? 'tab-item--active' : ''}`}
           onClick={() => setTab('wines')}
         >
-          Manage Wines
+          Wines
         </button>
         <button
-          className={`btn ${tab === 'sites' ? 'btn--primary' : 'btn--secondary'}`}
+          className={`tab-item ${tab === 'sites' ? 'tab-item--active' : ''}`}
           onClick={() => setTab('sites')}
         >
-          Manage Shipping Sites
+          Shipping Sites
         </button>
       </div>
 
       {tab === 'orders' && <OrdersAdmin />}
       {tab === 'wines' && <WinesAdmin />}
       {tab === 'sites' && <SitesAdmin />}
-    </>
+    </div>
   );
 }
 
-// ─── Orders Admin — View all orders grouped by site ────────────────
+// ─── Orders Admin ──────────────────────────────────────────────────
 
 function OrdersAdmin() {
   const [groupOrders, setGroupOrders] = useState<IGroupOrder[]>([]);
@@ -63,7 +67,6 @@ function OrdersAdmin() {
     return groupOrders.filter((go) => go.status === statusFilter);
   }, [groupOrders, statusFilter]);
 
-  // Group by shipping site
   const siteGroups = useMemo(() => {
     const map = new Map<
       string,
@@ -78,7 +81,6 @@ function OrdersAdmin() {
       const group = map.get(siteId)!;
       group.orders.push(go);
 
-      // Sum all participants' order items for this group order
       for (const p of go.participants) {
         for (const item of p.orderItems) {
           group.siteTotal += item.quantity * item.unitPrice;
@@ -89,18 +91,25 @@ function OrdersAdmin() {
     return Array.from(map.values());
   }, [filtered]);
 
-  if (loading) return <p>Loading orders...</p>;
+  if (loading) return <div className="spinner" />;
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div className="section-header">
         <h2>All Orders</h2>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Filter:</label>
+          <span className="text-muted text-sm" style={{ fontWeight: 600 }}>Status:</span>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            style={{ padding: '0.35rem 0.5rem', borderRadius: 6, border: '1px solid #ddd' }}
+            style={{
+              padding: '0.4rem 0.7rem',
+              borderRadius: 'var(--radius-sm)',
+              border: '1.5px solid var(--gray-200)',
+              fontSize: '0.85rem',
+              fontFamily: 'var(--font-sans)',
+              outline: 'none',
+            }}
           >
             <option value="all">All Statuses</option>
             <option value="open">Open</option>
@@ -112,60 +121,38 @@ function OrdersAdmin() {
       </div>
 
       {siteGroups.length === 0 ? (
-        <p style={{ color: '#888' }}>No orders found.</p>
+        <div className="empty-state">
+          <span className="empty-state-icon">📦</span>
+          <h3>No orders found</h3>
+          <p>Try adjusting your status filter.</p>
+        </div>
       ) : (
         siteGroups.map((sg) => (
-          <div
-            key={sg.site.id}
-            style={{
-              marginBottom: '2rem',
-              padding: '1.5rem',
-              background: 'white',
-              border: '1px solid #eee',
-              borderRadius: 12,
-            }}
-          >
-            {/* Site header with total */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '1rem',
-                paddingBottom: '0.75rem',
-                borderBottom: '2px solid #f0f0f0',
-              }}
-            >
+          <div key={sg.site.id} className="section-panel" style={{ marginBottom: 'var(--space-lg)' }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 'var(--space-md)',
+              paddingBottom: 'var(--space-md)',
+              borderBottom: '2px solid var(--gray-100)',
+            }}>
               <div>
-                <h3 style={{ margin: 0 }}>📍 {sg.site.name}</h3>
-                <p style={{ fontSize: '0.85rem', color: '#888', margin: '4px 0' }}>
+                <h3 style={{ margin: 0, fontSize: '1.05rem' }}>📍 {sg.site.name}</h3>
+                <p className="text-muted text-sm" style={{ margin: '4px 0 0' }}>
                   {sg.site.address}, {sg.site.city}
                 </p>
               </div>
-              <div
-                style={{
-                  background: 'var(--wine-light, #f5e6e8)',
-                  padding: '0.5rem 1rem',
-                  borderRadius: 8,
-                  textAlign: 'center',
-                }}
-              >
-                <div style={{ fontSize: '0.75rem', color: '#888' }}>Site Total</div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--wine-red, #722f37)' }}>
-                  ₪{sg.siteTotal.toFixed(2)}
-                </div>
+              <div className="stat-card" style={{ minWidth: 110, margin: 0, border: 'none', background: 'var(--wine-50)', padding: '0.5rem 1rem' }}>
+                <div className="stat-value" style={{ fontSize: '1.15rem' }}>₪{sg.siteTotal.toFixed(2)}</div>
+                <div className="stat-label">Site Total</div>
               </div>
             </div>
 
-            {/* Each group order for this site */}
             {sg.orders.map((go) => {
               const goTotal = go.participants.reduce(
                 (sum, p) =>
-                  sum +
-                  p.orderItems.reduce(
-                    (s, i) => s + i.quantity * i.unitPrice,
-                    0,
-                  ),
+                  sum + p.orderItems.reduce((s, i) => s + i.quantity * i.unitPrice, 0),
                 0,
               );
 
@@ -173,26 +160,25 @@ function OrdersAdmin() {
                 <div
                   key={go.id}
                   style={{
-                    marginBottom: '1rem',
-                    padding: '1rem',
-                    background: '#fafafa',
-                    borderRadius: 8,
-                    border: '1px solid #f0f0f0',
+                    marginBottom: 'var(--space-md)',
+                    padding: 'var(--space-md)',
+                    background: 'var(--gray-50)',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--gray-100)',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-sm)' }}>
                     <div>
-                      <strong>Group Order #{go.id.slice(0, 8)}</strong>{' '}
+                      <strong style={{ color: 'var(--gray-900)' }}>Order #{go.id.slice(0, 8)}</strong>{' '}
                       <span className={`badge badge--${go.status}`}>{go.status}</span>
-                      <p style={{ fontSize: '0.8rem', color: '#888', margin: '2px 0' }}>
-                        Created: {new Date(go.createdAt).toLocaleDateString()} · {go.participants.length} participant(s) · ₪{goTotal.toFixed(2)}
+                      <p className="text-muted text-xs" style={{ margin: '2px 0 0' }}>
+                        {new Date(go.createdAt).toLocaleDateString()} · {go.participants.length} participant(s) · ₪{goTotal.toFixed(2)}
                       </p>
                     </div>
                   </div>
 
-                  {/* Each participant's order */}
                   {go.participants.length === 0 ? (
-                    <p style={{ color: '#aaa', fontSize: '0.85rem' }}>No participants yet.</p>
+                    <p className="text-muted text-sm">No participants yet.</p>
                   ) : (
                     go.participants.map((p) => {
                       const pTotal = p.orderItems.reduce(
@@ -203,24 +189,24 @@ function OrdersAdmin() {
                         <div
                           key={p.id}
                           style={{
-                            marginBottom: '0.75rem',
-                            padding: '0.75rem',
+                            marginBottom: 'var(--space-sm)',
+                            padding: 'var(--space-sm) var(--space-md)',
                             background: 'white',
-                            border: '1px solid #eee',
-                            borderRadius: 6,
+                            border: '1px solid var(--gray-200)',
+                            borderRadius: 'var(--radius-sm)',
                           }}
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
-                              <strong>{p.user.name}</strong>{' '}
-                              <span style={{ color: '#888', fontSize: '0.85rem' }}>({p.user.email})</span>
+                              <strong style={{ color: 'var(--gray-900)' }}>{p.user.name}</strong>{' '}
+                              <span className="text-muted text-sm">{p.user.email}</span>
                             </div>
-                            <span style={{ fontWeight: 700, color: 'var(--wine-red, #722f37)' }}>
+                            <span style={{ fontWeight: 700, color: 'var(--wine-700)' }}>
                               ₪{pTotal.toFixed(2)}
                             </span>
                           </div>
                           {p.orderItems.length > 0 && (
-                            <table style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
+                            <table style={{ marginTop: 'var(--space-sm)', fontSize: '0.85rem' }}>
                               <thead>
                                 <tr>
                                   <th>Wine</th>
@@ -232,10 +218,12 @@ function OrdersAdmin() {
                               <tbody>
                                 {p.orderItems.map((item) => (
                                   <tr key={item.id}>
-                                    <td>{item.wine.name}</td>
+                                    <td style={{ fontWeight: 500 }}>{item.wine.name}</td>
                                     <td>{item.quantity}</td>
                                     <td>₪{item.unitPrice.toFixed(2)}</td>
-                                    <td>₪{(item.quantity * item.unitPrice).toFixed(2)}</td>
+                                    <td style={{ fontWeight: 600, color: 'var(--wine-700)' }}>
+                                      ₪{(item.quantity * item.unitPrice).toFixed(2)}
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -254,6 +242,8 @@ function OrdersAdmin() {
     </>
   );
 }
+
+// ─── Wines Admin ───────────────────────────────────────────────────
 
 function WinesAdmin() {
   const [wines, setWines] = useState<IWine[]>([]);
@@ -299,7 +289,7 @@ function WinesAdmin() {
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="section-header">
         <h2>Wines ({wines.length})</h2>
         <button className="btn btn--primary" onClick={() => setShowForm(!showForm)}>
           {showForm ? 'Cancel' : '+ Add Wine'}
@@ -309,17 +299,21 @@ function WinesAdmin() {
       {error && <div className="error-msg">{error}</div>}
 
       {showForm && (
-        <form onSubmit={handleCreate} style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f9f9f9', borderRadius: 12 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-            <div className="form-group">
+        <form
+          onSubmit={handleCreate}
+          className="section-panel"
+          style={{ marginBottom: 'var(--space-lg)', background: 'var(--gray-50)' }}
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label>Name</label>
               <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
             </div>
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label>Region</label>
               <input value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} required />
             </div>
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label>Color</label>
               <select value={form.color || 'red'} onChange={(e) => setForm({ ...form, color: e.target.value as WineColor })}>
                 <option value="red">🌹 Red</option>
@@ -328,60 +322,66 @@ function WinesAdmin() {
                 <option value="orange">🐅 Orange</option>
               </select>
             </div>
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label>Price (₪)</label>
               <input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} required />
             </div>
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label>Vintage</label>
               <input type="number" value={form.vintage} onChange={(e) => setForm({ ...form, vintage: Number(e.target.value) })} required />
             </div>
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label>Stock</label>
               <input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} required />
             </div>
-            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+            <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
               <label>Description</label>
-              <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="A brief description of the wine..." />
             </div>
           </div>
-          <button className="btn btn--success" type="submit">Create Wine</button>
+          <div style={{ marginTop: 'var(--space-lg)' }}>
+            <button className="btn btn--success" type="submit">Create Wine</button>
+          </div>
         </form>
       )}
 
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Color</th>
-            <th>Region</th>
-            <th>Vintage</th>
-            <th>Price</th>
-            <th>Stock</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {wines.map((w) => (
-            <tr key={w.id}>
-              <td>{w.name}</td>
-              <td>{w.color === 'red' ? '🌹' : w.color === 'rose' ? '🦩' : w.color === 'white' ? '⚪️' : '🐅'}</td>
-              <td>{w.region}</td>
-              <td>{w.vintage}</td>
-              <td>₪{w.price.toFixed(2)}</td>
-              <td>{w.stock}</td>
-              <td>
-                <button className="btn btn--danger btn--small" onClick={() => handleDelete(w.id)}>
-                  Delete
-                </button>
-              </td>
+      <div className="section-panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Color</th>
+              <th>Region</th>
+              <th>Vintage</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th style={{ width: 80 }}></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {wines.map((w) => (
+              <tr key={w.id}>
+                <td style={{ fontWeight: 600, color: 'var(--gray-900)' }}>{w.name}</td>
+                <td>{w.color === 'red' ? '🌹' : w.color === 'rose' ? '🦩' : w.color === 'white' ? '⚪️' : '🐅'}</td>
+                <td className="text-muted">{w.region}</td>
+                <td>{w.vintage}</td>
+                <td style={{ fontWeight: 600, color: 'var(--wine-700)' }}>₪{w.price.toFixed(2)}</td>
+                <td>{w.stock}</td>
+                <td>
+                  <button className="btn btn--danger btn--small" onClick={() => handleDelete(w.id)}>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </>
   );
 }
+
+// ─── Shipping Sites Admin ──────────────────────────────────────────
 
 function SitesAdmin() {
   const [sites, setSites] = useState<IShippingSite[]>([]);
@@ -430,7 +430,7 @@ function SitesAdmin() {
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="section-header">
         <h2>Shipping Sites ({sites.length})</h2>
         <button className="btn btn--primary" onClick={() => setShowForm(!showForm)}>
           {showForm ? 'Cancel' : '+ Add Site'}
@@ -440,56 +440,66 @@ function SitesAdmin() {
       {error && <div className="error-msg">{error}</div>}
 
       {showForm && (
-        <form onSubmit={handleCreate} style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f9f9f9', borderRadius: 12 }}>
-          <div className="form-group">
-            <label>Name</label>
-            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+        <form
+          onSubmit={handleCreate}
+          className="section-panel"
+          style={{ marginBottom: 'var(--space-lg)', background: 'var(--gray-50)' }}
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-md)' }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>Name</label>
+              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>Address</label>
+              <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required />
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>City</label>
+              <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} required />
+            </div>
           </div>
-          <div className="form-group">
-            <label>Address</label>
-            <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required />
+          <div style={{ marginTop: 'var(--space-lg)' }}>
+            <button className="btn btn--success" type="submit">Create Site</button>
           </div>
-          <div className="form-group">
-            <label>City</label>
-            <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} required />
-          </div>
-          <button className="btn btn--success" type="submit">Create Site</button>
         </form>
       )}
 
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Address</th>
-            <th>City</th>
-            <th>Active</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {sites.map((s) => (
-            <tr key={s.id}>
-              <td>{s.name}</td>
-              <td>{s.address}</td>
-              <td>{s.city}</td>
-              <td>
-                <button
-                  className={`btn btn--small ${s.isActive ? 'btn--success' : 'btn--secondary'}`}
-                  onClick={() => handleToggle(s)}
-                >
-                  {s.isActive ? 'Active' : 'Inactive'}
-                </button>
-              </td>
-              <td>
-                <button className="btn btn--danger btn--small" onClick={() => handleDelete(s.id)}>
-                  Delete
-                </button>
-              </td>
+      <div className="section-panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Address</th>
+              <th>City</th>
+              <th>Status</th>
+              <th style={{ width: 80 }}></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {sites.map((s) => (
+              <tr key={s.id}>
+                <td style={{ fontWeight: 600, color: 'var(--gray-900)' }}>{s.name}</td>
+                <td className="text-muted">{s.address}</td>
+                <td>{s.city}</td>
+                <td>
+                  <button
+                    className={`btn btn--small ${s.isActive ? 'btn--success' : 'btn--secondary'}`}
+                    onClick={() => handleToggle(s)}
+                  >
+                    {s.isActive ? 'Active' : 'Inactive'}
+                  </button>
+                </td>
+                <td>
+                  <button className="btn btn--danger btn--small" onClick={() => handleDelete(s.id)}>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </>
   );
 }

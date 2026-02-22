@@ -18,52 +18,52 @@ export function LoginPage() {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '2rem auto' }}>
-      <h1>Login</h1>
-      {error && <div className="error-msg">{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button className="btn btn--primary" disabled={isLoading}>
-          {isLoading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
-      <p style={{ marginTop: '1rem' }}>
-        Don't have an account? <Link to="/register">Register</Link>
-      </p>
+    <div className="auth-wrapper">
+      <div className="auth-card animate-in">
+        <h1>Welcome Back</h1>
+        <p className="auth-subtitle">Sign in to your wine market account</p>
 
-      <div
-        style={{
-          marginTop: '2rem',
-          padding: '1rem',
-          background: '#f5f5f5',
-          borderRadius: 8,
-          fontSize: '0.85rem',
-        }}
-      >
-        <strong>Demo accounts:</strong>
-        <br />
-        admin@wine.local / password123
-        <br />
-        retail@wine.local / password123
-        <br />
-        customer@wine.local / password123
+        {error && <div className="error-msg">{error}</div>}
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button className="btn btn--primary" disabled={isLoading}>
+            {isLoading ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
+
+        <p className="auth-footer">
+          Don't have an account? <Link to="/register">Create one</Link>
+        </p>
+
+        <div className="demo-box">
+          <strong>Demo accounts</strong>
+          <br />
+          <code>admin@wine.local</code> / <code>password123</code>
+          <br />
+          <code>retail@wine.local</code> / <code>password123</code>
+          <br />
+          <code>customer@wine.local</code> / <code>password123</code>
+        </div>
       </div>
     </div>
   );
