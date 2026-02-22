@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../api/client';
+import { useAuthStore } from '../stores/auth.store';
 import type {
   IGroupOrder,
   IGroupOrderSummary,
@@ -10,6 +11,8 @@ export function GroupOrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [go, setGo] = useState<IGroupOrder | null>(null);
   const [summary, setSummary] = useState<IGroupOrderSummary | null>(null);
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
     if (!id) return;
@@ -18,6 +21,11 @@ export function GroupOrderDetailPage() {
   }, [id]);
 
   if (!go) return <p>Loading...</p>;
+
+  // For non-admin users, only show their own participation
+  const visibleParticipants = isAdmin
+    ? go.participants
+    : go.participants.filter((p) => p.userId === user?.id);
 
   return (
     <>
@@ -86,7 +94,7 @@ export function GroupOrderDetailPage() {
             </div>
           )}
 
-          {summary.wineAggregation.length > 0 && (
+          {isAdmin && summary.wineAggregation.length > 0 && (
             <table>
               <thead>
                 <tr>
@@ -109,11 +117,17 @@ export function GroupOrderDetailPage() {
         </div>
       )}
 
-      <h2>Participants ({go.participants.length})</h2>
-      {go.participants.length === 0 ? (
-        <p style={{ color: '#888' }}>No one has enrolled yet.</p>
+      <h2>
+        {isAdmin
+          ? `Participants (${go.participants.length})`
+          : 'My Order'}
+      </h2>
+      {visibleParticipants.length === 0 ? (
+        <p style={{ color: '#888' }}>
+          {isAdmin ? 'No one has enrolled yet.' : 'You are not enrolled in this group order.'}
+        </p>
       ) : (
-        go.participants.map((p) => (
+        visibleParticipants.map((p) => (
           <div
             key={p.id}
             style={{
@@ -124,12 +138,14 @@ export function GroupOrderDetailPage() {
               borderRadius: 8,
             }}
           >
-            <h4>
-              {p.user.name}{' '}
-              <span style={{ color: '#888', fontWeight: 400 }}>
-                ({p.user.email})
-              </span>
-            </h4>
+            {isAdmin && (
+              <h4>
+                {p.user.name}{' '}
+                <span style={{ color: '#888', fontWeight: 400 }}>
+                  ({p.user.email})
+                </span>
+              </h4>
+            )}
             <p style={{ fontSize: '0.85rem', color: '#888' }}>
               Enrolled: {new Date(p.enrolledAt).toLocaleString()}
             </p>
@@ -153,6 +169,16 @@ export function GroupOrderDetailPage() {
                     </tr>
                   ))}
                 </tbody>
+                <tfoot>
+                  <tr>
+                    <td colSpan={3} style={{ textAlign: 'right', fontWeight: 700 }}>
+                      Total:
+                    </td>
+                    <td style={{ fontWeight: 700 }}>
+                      ₪{p.orderItems.reduce((s, i) => s + i.quantity * i.unitPrice, 0).toFixed(2)}
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
             )}
           </div>

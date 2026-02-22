@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { api } from '../api/client';
 import type {
   IWine,
@@ -6,16 +6,23 @@ import type {
   IWineListResponse,
   IShippingSite,
   IShippingSiteCreate,
+  IGroupOrder,
   WineColor,
 } from '@wine-order-app/shared-types';
 
 export function AdminPage() {
-  const [tab, setTab] = useState<'wines' | 'sites'>('wines');
+  const [tab, setTab] = useState<'orders' | 'wines' | 'sites'>('orders');
 
   return (
     <>
       <h1>⚙️ Admin Panel</h1>
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+        <button
+          className={`btn ${tab === 'orders' ? 'btn--primary' : 'btn--secondary'}`}
+          onClick={() => setTab('orders')}
+        >
+          All Orders
+        </button>
         <button
           className={`btn ${tab === 'wines' ? 'btn--primary' : 'btn--secondary'}`}
           onClick={() => setTab('wines')}
@@ -30,8 +37,220 @@ export function AdminPage() {
         </button>
       </div>
 
+      {tab === 'orders' && <OrdersAdmin />}
       {tab === 'wines' && <WinesAdmin />}
       {tab === 'sites' && <SitesAdmin />}
+    </>
+  );
+}
+
+// ─── Orders Admin — View all orders grouped by site ────────────────
+
+function OrdersAdmin() {
+  const [groupOrders, setGroupOrders] = useState<IGroupOrder[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get<IGroupOrder[]>('/group-orders').then((orders) => {
+      setGroupOrders(orders);
+      setLoading(false);
+    });
+  }, []);
+
+  const filtered = useMemo(() => {
+    if (statusFilter === 'all') return groupOrders;
+    return groupOrders.filter((go) => go.status === statusFilter);
+  }, [groupOrders, statusFilter]);
+
+  // Group by shipping site
+  const siteGroups = useMemo(() => {
+    const map = new Map<
+      string,
+      { site: IGroupOrder['shippingSite']; orders: IGroupOrder[]; siteTotal: number }
+    >();
+
+    for (const go of filtered) {
+      const siteId = go.shippingSiteId;
+      if (!map.has(siteId)) {
+        map.set(siteId, { site: go.shippingSite, orders: [], siteTotal: 0 });
+      }
+      const group = map.get(siteId)!;
+      group.orders.push(go);
+
+      // Sum all participants' order items for this group order
+      for (const p of go.participants) {
+        for (const item of p.orderItems) {
+          group.siteTotal += item.quantity * item.unitPrice;
+        }
+      }
+    }
+
+    return Array.from(map.values());
+  }, [filtered]);
+
+  if (loading) return <p>Loading orders...</p>;
+
+  return (
+    <>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h2>All Orders</h2>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Filter:</label>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{ padding: '0.35rem 0.5rem', borderRadius: 6, border: '1px solid #ddd' }}
+          >
+            <option value="all">All Statuses</option>
+            <option value="open">Open</option>
+            <option value="closed">Closed</option>
+            <option value="submitted">Submitted</option>
+            <option value="shipped">Shipped</option>
+          </select>
+        </div>
+      </div>
+
+      {siteGroups.length === 0 ? (
+        <p style={{ color: '#888' }}>No orders found.</p>
+      ) : (
+        siteGroups.map((sg) => (
+          <div
+            key={sg.site.id}
+            style={{
+              marginBottom: '2rem',
+              padding: '1.5rem',
+              background: 'white',
+              border: '1px solid #eee',
+              borderRadius: 12,
+            }}
+          >
+            {/* Site header with total */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1rem',
+                paddingBottom: '0.75rem',
+                borderBottom: '2px solid #f0f0f0',
+              }}
+            >
+              <div>
+                <h3 style={{ margin: 0 }}>📍 {sg.site.name}</h3>
+                <p style={{ fontSize: '0.85rem', color: '#888', margin: '4px 0' }}>
+                  {sg.site.address}, {sg.site.city}
+                </p>
+              </div>
+              <div
+                style={{
+                  background: 'var(--wine-light, #f5e6e8)',
+                  padding: '0.5rem 1rem',
+                  borderRadius: 8,
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: '0.75rem', color: '#888' }}>Site Total</div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--wine-red, #722f37)' }}>
+                  ₪{sg.siteTotal.toFixed(2)}
+                </div>
+              </div>
+            </div>
+
+            {/* Each group order for this site */}
+            {sg.orders.map((go) => {
+              const goTotal = go.participants.reduce(
+                (sum, p) =>
+                  sum +
+                  p.orderItems.reduce(
+                    (s, i) => s + i.quantity * i.unitPrice,
+                    0,
+                  ),
+                0,
+              );
+
+              return (
+                <div
+                  key={go.id}
+                  style={{
+                    marginBottom: '1rem',
+                    padding: '1rem',
+                    background: '#fafafa',
+                    borderRadius: 8,
+                    border: '1px solid #f0f0f0',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <div>
+                      <strong>Group Order #{go.id.slice(0, 8)}</strong>{' '}
+                      <span className={`badge badge--${go.status}`}>{go.status}</span>
+                      <p style={{ fontSize: '0.8rem', color: '#888', margin: '2px 0' }}>
+                        Created: {new Date(go.createdAt).toLocaleDateString()} · {go.participants.length} participant(s) · ₪{goTotal.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Each participant's order */}
+                  {go.participants.length === 0 ? (
+                    <p style={{ color: '#aaa', fontSize: '0.85rem' }}>No participants yet.</p>
+                  ) : (
+                    go.participants.map((p) => {
+                      const pTotal = p.orderItems.reduce(
+                        (s, i) => s + i.quantity * i.unitPrice,
+                        0,
+                      );
+                      return (
+                        <div
+                          key={p.id}
+                          style={{
+                            marginBottom: '0.75rem',
+                            padding: '0.75rem',
+                            background: 'white',
+                            border: '1px solid #eee',
+                            borderRadius: 6,
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <strong>{p.user.name}</strong>{' '}
+                              <span style={{ color: '#888', fontSize: '0.85rem' }}>({p.user.email})</span>
+                            </div>
+                            <span style={{ fontWeight: 700, color: 'var(--wine-red, #722f37)' }}>
+                              ₪{pTotal.toFixed(2)}
+                            </span>
+                          </div>
+                          {p.orderItems.length > 0 && (
+                            <table style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
+                              <thead>
+                                <tr>
+                                  <th>Wine</th>
+                                  <th>Qty</th>
+                                  <th>Unit Price</th>
+                                  <th>Subtotal</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {p.orderItems.map((item) => (
+                                  <tr key={item.id}>
+                                    <td>{item.wine.name}</td>
+                                    <td>{item.quantity}</td>
+                                    <td>₪{item.unitPrice.toFixed(2)}</td>
+                                    <td>₪{(item.quantity * item.unitPrice).toFixed(2)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))
+      )}
     </>
   );
 }
