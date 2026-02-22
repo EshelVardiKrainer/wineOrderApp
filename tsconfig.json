@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@wine-order-app/shared-types": ["libs/shared-types/src/index.ts"],
+      "@wine-order-app/api-sdk": ["libs/api-sdk/src/index.ts"]
+    }
+  },
+  "include": [],
+  "files": [],
+  "references": [
+    { "path": "./apps/api" },
+    { "path": "./apps/web" },
+    { "path": "./libs/shared-types" },
+    { "path": "./libs/api-sdk" }
+  ]
+}

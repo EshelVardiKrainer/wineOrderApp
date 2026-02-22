@@ -99,7 +99,7 @@ function WinesAdmin() {
               <input value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} required />
             </div>
             <div className="form-group">
-              <label>Price ($)</label>
+              <label>Price (₪)</label>
               <input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} required />
             </div>
             <div className="form-group">
@@ -136,7 +136,7 @@ function WinesAdmin() {
               <td>{w.name}</td>
               <td>{w.region}</td>
               <td>{w.vintage}</td>
-              <td>${w.price.toFixed(2)}</td>
+              <td>₪{w.price.toFixed(2)}</td>
               <td>{w.stock}</td>
               <td>
                 <button className="btn btn--danger btn--small" onClick={() => handleDelete(w.id)}>

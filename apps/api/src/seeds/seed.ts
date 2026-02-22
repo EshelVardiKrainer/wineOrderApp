@@ -32,138 +32,170 @@ async function seed() {
   // ─── Users ──────────────────────────────────────────────────────────
   const passwordHash = await bcrypt.hash('password123', 10);
 
-  const admin = userRepo.create({
-    name: 'Admin User',
-    email: 'admin@wine.local',
-    passwordHash,
-    role: 'ADMIN',
-  });
-
-  const retailUser = userRepo.create({
-    name: 'Retail Buyer',
-    email: 'retail@wine.local',
-    passwordHash,
-    role: 'RETAIL',
-  });
-
-  const customer = userRepo.create({
-    name: 'Regular Customer',
-    email: 'customer@wine.local',
-    passwordHash,
-    role: 'CUSTOMER',
-  });
-
-  await userRepo.save([admin, retailUser, customer]);
-  console.log('👤 Users seeded');
-
-  // ─── Wines ──────────────────────────────────────────────────────────
-  const wines = [
+  const userData = [
     {
-      name: 'Château Margaux 2018',
-      description:
-        'A complex and elegant Bordeaux with notes of blackcurrant, violet, and cedar.',
-      price: 450,
-      region: 'Bordeaux',
-      vintage: 2018,
-      stock: 120,
-      imageUrl: null,
+      name: 'Admin User',
+      email: 'admin@wine.local',
+      passwordHash,
+      role: 'ADMIN',
     },
     {
-      name: 'Opus One 2019',
-      description:
-        'Napa Valley icon. Rich dark fruit, cocoa, and fine-grained tannins.',
-      price: 380,
-      region: 'Napa Valley',
-      vintage: 2019,
-      stock: 80,
-      imageUrl: null,
+      name: 'Retail Buyer',
+      email: 'retail@wine.local',
+      passwordHash,
+      role: 'RETAIL',
     },
     {
-      name: 'Cloudy Bay Sauvignon Blanc 2022',
-      description:
-        'Crisp and aromatic with passion fruit, citrus, and fresh herbs.',
-      price: 28,
-      region: 'Marlborough',
-      vintage: 2022,
-      stock: 500,
-      imageUrl: null,
-    },
-    {
-      name: 'Barolo Monfortino 2016',
-      description:
-        'The king of Italian reds. Tar, roses, and incredible depth.',
-      price: 320,
-      region: 'Piedmont',
-      vintage: 2016,
-      stock: 45,
-      imageUrl: null,
-    },
-    {
-      name: 'Penfolds Grange 2018',
-      description:
-        'Australia\'s most iconic Shiraz. Plum, dark chocolate, and spice.',
-      price: 650,
-      region: 'South Australia',
-      vintage: 2018,
-      stock: 30,
-      imageUrl: null,
-    },
-    {
-      name: 'Sancerre Domaine Vacheron 2021',
-      description: 'Mineral-driven Loire Sauvignon Blanc with flint and citrus.',
-      price: 42,
-      region: 'Loire Valley',
-      vintage: 2021,
-      stock: 200,
-      imageUrl: null,
-    },
-    {
-      name: 'Rioja Reserva Viña Tondonia 2011',
-      description:
-        'Old-school Rioja. Dried cherry, leather, and tobacco leaf.',
-      price: 55,
-      region: 'Rioja',
-      vintage: 2011,
-      stock: 150,
-      imageUrl: null,
-    },
-    {
-      name: 'Whispering Angel Rosé 2023',
-      description:
-        'Provence rosé at its finest. Pale salmon with fresh strawberry and peach.',
-      price: 22,
-      region: 'Provence',
-      vintage: 2023,
-      stock: 600,
-      imageUrl: null,
-    },
-    {
-      name: 'Gewürztraminer Grand Cru 2020',
-      description:
-        'Lychee, rose petal, and ginger. Off-dry with beautiful acidity.',
-      price: 38,
-      region: 'Alsace',
-      vintage: 2020,
-      stock: 90,
-      imageUrl: null,
-    },
-    {
-      name: 'Brunello di Montalcino 2017',
-      description:
-        'Sangiovese at its purest. Cherry, earth, and dried herbs.',
-      price: 75,
-      region: 'Tuscany',
-      vintage: 2017,
-      stock: 110,
-      imageUrl: null,
+      name: 'Regular Customer',
+      email: 'customer@wine.local',
+      passwordHash,
+      role: 'CUSTOMER',
     },
   ];
 
-  await wineRepo.save(wines.map((w) => wineRepo.create(w)));
-  console.log('🍷 Wines seeded');
+  for (const u of userData) {
+    const exists = await userRepo.findOneBy({ email: u.email });
+    if (!exists) {
+      await userRepo.save(userRepo.create(u as any));
+    }
+  }
+  console.log('👤 Users checked/seeded');
+
+  // ─── Wines ──────────────────────────────────────────────────────────
+  const winesData = [
+    // אדום 🌹
+    {
+      name: 'אמפלוס פוס של זכריאס (אדום, יוון)',
+      description: 'אדום ימתיכוני לשלוקים גדולים שאפשר לשתות צונן. 70% אגיורגיטיקו ו-30% קברנה סובניון. יוון (נמאה).',
+      price: 45,
+      region: 'Nemea, Greece',
+      vintage: 2023,
+      stock: 100,
+      imageUrl: 'https://www.saroimports.com/wp-content/uploads/%D7%96%D7%9B%D7%A8%D7%99%D7%90%D7%A1-%D7%90%D7%9E%D7%A4%D7%9C%D7%95%D7%A1-%D7%90%D7%93%D7%95%D7%9D-scaled.jpg',
+    },
+    {
+      name: 'רפושק של סנתומאס (אדום, סלובניה)',
+      description: 'רפושק (Refosk) של סנתומאס, סלובניה.',
+      price: 55,
+      region: 'Slovenia',
+      vintage: 2021,
+      stock: 100,
+      imageUrl: 'https://www.saroimports.com/wp-content/uploads/%D7%A1%D7%A0%D7%AA%D7%95%D7%9E%D7%90%D7%A1-%D7%A8%D7%A4%D7%95%D7%A9%D7%A7-scaled.jpg',
+    },
+    {
+      name: 'פינו נואר של סטובי (אדום, מקדוניה)',
+      description: 'פינו נואר של סטובי, מקדוניה. יין קליל וארומטי.',
+      price: 45,
+      region: 'Macedonia',
+      vintage: 2022,
+      stock: 100,
+      imageUrl: 'https://www.saroimports.com/wp-content/uploads/Stobi_Pinot_Noir_Red-scaled.jpg',
+    },
+    // רוזה 🦩
+    {
+      name: 'אנה של גונץ (רוזה, סלובניה)',
+      description: 'אנה של גונץ (Gonc Anna), סלובניה. רוזה מרענן.',
+      price: 54,
+      region: 'Slovenia',
+      vintage: 2022,
+      stock: 100,
+      imageUrl: 'https://www.saroimports.com/wp-content/uploads/GONC_Anna_Rose-scaled.jpg',
+    },
+    {
+      name: 'זכריאס רוזה (רוזה, יוון)',
+      description: 'זכריאס אגיורגיטיקו רוזה, יוון.',
+      price: 55,
+      region: 'Greece',
+      vintage: 2023,
+      stock: 100,
+      imageUrl: 'https://www.saroimports.com/wp-content/uploads/%D7%96%D7%9B%D7%A8%D7%99%D7%90%D7%A1-%D7%A8%D7%95%D7%96%D7%94-scaled.jpg',
+    },
+    // לבן ⚪️
+    {
+      name: 'גונץ הקטן (לבן, סלובניה)',
+      description: 'The Little One by Gonc, סלובניה.',
+      price: 55,
+      region: 'Slovenia',
+      vintage: 2022,
+      stock: 100,
+      imageUrl: 'https://www.saroimports.com/wp-content/uploads/GONC_Little_One-scaled.jpg',
+    },
+    {
+      name: 'גרייפ אבדקשן לבן (לבן, סלובניה)',
+      description: 'Grape Abduction White, סלובניה. מורכב מחמישה זנים מקומיים.',
+      price: 60,
+      region: 'Slovenia',
+      vintage: 2023,
+      stock: 100,
+      imageUrl: 'https://www.saroimports.com/wp-content/uploads/Grape_Abduction_White-scaled.jpg',
+    },
+    {
+      name: 'סטירייה הילס מוסקט (לבן חצי מתוק, סלובניה)',
+      description: 'Kobal Styria Hills Muscat, סלובניה. חצי מתוק, ארומטי ומרענן.',
+      price: 50,
+      region: 'Slovenia',
+      vintage: 2022,
+      stock: 100,
+      imageUrl: 'https://www.saroimports.com/wp-content/uploads/%D7%A7%D7%95%D7%91%D7%90%D7%9C-%D7%9E%D7%95%D7%A1%D7%A7%D7%98-scaled.jpg',
+    },
+    {
+      name: 'מוסקופילרו של זכריאס (לבן, יוון)',
+      description: 'Zacharias Moschofilero, יוון. יין לבן ארומטי מאוד עם חמיצות נעימה.',
+      price: 62,
+      region: 'Greece',
+      vintage: 2023,
+      stock: 100,
+      imageUrl: 'https://www.saroimports.com/wp-content/uploads/%D7%96%D7%9B%D7%A8%D7%99%D7%90%D7%A1-%D7%9E%D7%95%D7%A1%D7%A7%D7%95%D7%A4%D7%99%D7%9C%D7%A8%D7%95-scaled.jpg',
+    },
+    {
+      name: 'סטובי סמדרבקה (לבן, מקדוניה)',
+      description: 'Stobi Smederevka, מקדוניה. יין קליל ופירותי.',
+      price: 45,
+      region: 'Macedonia',
+      vintage: 2023,
+      stock: 100,
+      imageUrl: 'https://www.saroimports.com/wp-content/uploads/Stobi_Smederevka-scaled.jpg',
+    },
+    {
+      name: 'רבולה של שצ\'ורק (לבן, סלובניה)',
+      description: 'Scurek Rebula, סלובניה. יין רענן עם מינרליות בולטת.',
+      price: 75,
+      region: 'Slovenia',
+      vintage: 2022,
+      stock: 100,
+      imageUrl: 'https://www.saroimports.com/wp-content/uploads/%D7%A9%D7%A6%D7%95%D7%A8%D7%A7-%D7%A8%D7%91%D7%95%D7%9C%D7%94-scaled.jpg',
+    },
+    // כתום 🐅
+    {
+      name: 'גרייפ אבדקשן כתום (כתום, סלובניה)',
+      description: 'Grape Abduction Orange, סלובניה. יין כתום עם ארומות של קליפות תפוז ותבלינים.',
+      price: 60,
+      region: 'Slovenia',
+      vintage: 2022,
+      stock: 100,
+      imageUrl: 'https://www.saroimports.com/wp-content/uploads/Grape_Abduction_Orange-scaled.jpg',
+    },
+    {
+      name: 'שטקר/שצ\'ורק מלבזיה (כתום, סלובניה)',
+      description: 'Scurek Malvazija, סלובניה. יין כתום עשיר ומורכב.',
+      price: 100,
+      region: 'Slovenia',
+      vintage: 2022,
+      stock: 100,
+      imageUrl: 'https://www.saroimports.com/wp-content/uploads/%D7%A9%D7%A6%D7%95%D7%A8%D7%A7-%D7%9E%D7%9C%D7%91%D7%96%D7%99%D7%94-scaled.jpg',
+    },
+  ];
+
+  for (const w of winesData) {
+    const exists = await wineRepo.findOneBy({ name: w.name });
+    if (!exists) {
+      await wineRepo.save(wineRepo.create(w as any));
+    }
+  }
+  console.log('🍷 Wines checked/seeded');
 
   // ─── Shipping Sites ─────────────────────────────────────────────────
-  const sites = [
+  const sitesData = [
     {
       name: 'Tel Aviv Central Depot',
       address: '45 Rothschild Blvd',
@@ -196,8 +228,13 @@ async function seed() {
     },
   ];
 
-  await siteRepo.save(sites.map((s) => siteRepo.create(s)));
-  console.log('📦 Shipping sites seeded');
+  for (const s of sitesData) {
+    const exists = await siteRepo.findOneBy({ name: s.name });
+    if (!exists) {
+      await siteRepo.save(siteRepo.create(s));
+    }
+  }
+  console.log('📦 Shipping sites checked/seeded');
 
   await ds.destroy();
   console.log('✅ Seed complete!');

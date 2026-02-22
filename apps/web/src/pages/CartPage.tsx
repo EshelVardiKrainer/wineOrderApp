@@ -90,7 +90,7 @@ export function CartPage() {
                       {item.wine.region} · {item.wine.vintage}
                     </small>
                   </td>
-                  <td>${item.wine.price.toFixed(2)}</td>
+                  <td>₪{item.wine.price.toFixed(2)}</td>
                   <td style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <button
                       className="btn btn--secondary btn--small"
@@ -110,7 +110,7 @@ export function CartPage() {
                       +
                     </button>
                   </td>
-                  <td>${(item.wine.price * item.quantity).toFixed(2)}</td>
+                  <td>₪{(item.wine.price * item.quantity).toFixed(2)}</td>
                   <td>
                     <button
                       className="btn btn--danger btn--small"
@@ -128,7 +128,7 @@ export function CartPage() {
                   Total:
                 </td>
                 <td style={{ fontWeight: 700, fontSize: '1.1rem' }}>
-                  ${cart.totalPrice.toFixed(2)}
+                  ₪{cart.totalPrice.toFixed(2)}
                 </td>
                 <td></td>
               </tr>

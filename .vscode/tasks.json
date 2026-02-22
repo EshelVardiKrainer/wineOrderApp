@@ -22,6 +22,11 @@
 			"label": "Verify Servers",
 			"type": "shell",
 			"command": "curl -sS -o /dev/null -w 'Web: %{http_code}\\n' http://localhost:5173/ && curl -sS -o /dev/null -w 'API: %{http_code}\\n' http://localhost:3000/api/wines"
+		},
+		{
+			"label": "Check Ports",
+			"type": "shell",
+			"command": "lsof -i :3000 -i :5173 2>/dev/null | grep LISTEN || echo 'No servers running'"
 		}
 	]
 }

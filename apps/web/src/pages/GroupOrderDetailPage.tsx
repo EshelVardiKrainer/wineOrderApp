@@ -51,7 +51,7 @@ export function GroupOrderDetailPage() {
           <p>
             <strong>{summary.totalParticipants}</strong> participants ·{' '}
             <strong>{summary.totalBottles}</strong> total bottles ·{' '}
-            <strong>${summary.totalPrice.toFixed(2)}</strong> total value
+            <strong>₪{summary.totalPrice.toFixed(2)}</strong> total value
           </p>
 
           {summary.wineAggregation.length > 0 && (
@@ -68,7 +68,7 @@ export function GroupOrderDetailPage() {
                   <tr key={wa.wineId}>
                     <td>{wa.wineName}</td>
                     <td>{wa.totalQuantity}</td>
-                    <td>${wa.totalPrice.toFixed(2)}</td>
+                    <td>₪{wa.totalPrice.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -116,8 +116,8 @@ export function GroupOrderDetailPage() {
                     <tr key={item.id}>
                       <td>{item.wine.name}</td>
                       <td>{item.quantity}</td>
-                      <td>${item.unitPrice.toFixed(2)}</td>
-                      <td>${(item.quantity * item.unitPrice).toFixed(2)}</td>
+                      <td>₪{item.unitPrice.toFixed(2)}</td>
+                      <td>₪{(item.quantity * item.unitPrice).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>

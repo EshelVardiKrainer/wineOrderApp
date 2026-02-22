@@ -68,9 +68,9 @@ export function MyOrdersPage() {
                       <td>{item.wine.name}</td>
                       <td style={{ color: '#888' }}>{item.wine.region}</td>
                       <td>{item.quantity}</td>
-                      <td>${item.unitPrice.toFixed(2)}</td>
+                      <td>₪{item.unitPrice.toFixed(2)}</td>
                       <td style={{ fontWeight: 600 }}>
-                        ${(item.quantity * item.unitPrice).toFixed(2)}
+                        ₪{(item.quantity * item.unitPrice).toFixed(2)}
                       </td>
                     </tr>
                   ))}

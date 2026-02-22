@@ -68,7 +68,7 @@ export function WineCatalogPage() {
             <p className="region">
               {wine.region} · <span className="vintage">{wine.vintage}</span>
             </p>
-            <p className="price">${wine.price.toFixed(2)}</p>
+            <p className="price">₪{wine.price.toFixed(2)}</p>
             <p style={{ fontSize: '0.85rem', color: '#666' }}>
               {wine.description}
             </p>

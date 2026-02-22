@@ -12,7 +12,9 @@
     "migration:generate": "cd apps/api && npx ts-node -r tsconfig-paths/register ../../node_modules/typeorm/cli.js migration:generate -d src/data-source.ts src/migrations/Migration",
     "migration:run": "cd apps/api && npx ts-node -r tsconfig-paths/register ../../node_modules/typeorm/cli.js migration:run -d src/data-source.ts",
     "migration:revert": "cd apps/api && npx ts-node -r tsconfig-paths/register ../../node_modules/typeorm/cli.js migration:revert -d src/data-source.ts",
-    "seed": "npx ts-node -r tsconfig-paths/register apps/api/src/seeds/seed.ts"
+    "seed": "npx ts-node -r tsconfig-paths/register apps/api/src/seeds/seed.ts",
+    "stats": "npx ts-node -r tsconfig-paths/register apps/api/src/seeds/stats.ts",
+    "start": "./start.sh"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.0",
