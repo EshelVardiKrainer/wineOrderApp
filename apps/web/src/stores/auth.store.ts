@@ -1,15 +1,14 @@
 import { create } from 'zustand';
 import type { IUser } from '@wine-order-app/shared-types';
 import { api } from '../api/client';
-import type { IAuthResponse, ILoginRequest, IRegisterRequest } from '@wine-order-app/shared-types';
+import type { IAuthResponse } from '@wine-order-app/shared-types';
 
 interface AuthState {
   user: IUser | null;
   token: string | null;
   isLoading: boolean;
   error: string | null;
-  login: (input: ILoginRequest) => Promise<void>;
-  register: (input: IRegisterRequest) => Promise<void>;
+  googleLogin: (idToken: string) => Promise<void>;
   logout: () => void;
   hydrate: () => void;
 }
@@ -20,22 +19,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: false,
   error: null,
 
-  login: async (input) => {
+  googleLogin: async (idToken: string) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await api.post<IAuthResponse>('/auth/login', input);
-      localStorage.setItem('token', res.accessToken);
-      localStorage.setItem('user', JSON.stringify(res.user));
-      set({ user: res.user, token: res.accessToken, isLoading: false });
-    } catch (err: any) {
-      set({ error: err.message, isLoading: false });
-    }
-  },
-
-  register: async (input) => {
-    set({ isLoading: true, error: null });
-    try {
-      const res = await api.post<IAuthResponse>('/auth/register', input);
+      const res = await api.post<IAuthResponse>('/auth/google', { idToken });
       localStorage.setItem('token', res.accessToken);
       localStorage.setItem('user', JSON.stringify(res.user));
       set({ user: res.user, token: res.accessToken, isLoading: false });

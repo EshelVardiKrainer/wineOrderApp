@@ -1,68 +1,43 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { useAuthStore } from '../stores/auth.store';
 
 export function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const login = useAuthStore((s) => s.login);
+  const googleLogin = useAuthStore((s) => s.googleLogin);
   const isLoading = useAuthStore((s) => s.isLoading);
   const error = useAuthStore((s) => s.error);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await login({ email, password });
-    const user = useAuthStore.getState().user;
-    if (user) navigate('/wines');
+  const handleGoogleSuccess = async (response: CredentialResponse) => {
+    if (response.credential) {
+      await googleLogin(response.credential);
+      const user = useAuthStore.getState().user;
+      if (user) navigate('/wines');
+    }
   };
 
   return (
     <div className="auth-wrapper">
       <div className="auth-card animate-in">
-        <h1>Welcome Back</h1>
+        <h1>Welcome</h1>
         <p className="auth-subtitle">Sign in to your wine market account</p>
 
         {error && <div className="error-msg">{error}</div>}
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+          {isLoading ? (
+            <p>Signing in...</p>
+          ) : (
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => console.error('Google login failed')}
+              size="large"
+              theme="outline"
+              text="signin_with"
+              shape="rectangular"
+              width="300"
             />
-          </div>
-          <div className="form-group">
-            <label>Password</label>
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <button className="btn btn--primary" disabled={isLoading}>
-            {isLoading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
-
-        <p className="auth-footer">
-          Don't have an account? <Link to="/register">Create one</Link>
-        </p>
-
-        <div className="demo-box">
-          <strong>Demo accounts</strong>
-          <br />
-          <code>admin@wine.local</code> / <code>password123</code>
-          <br />
-          <code>retail@wine.local</code> / <code>password123</code>
-          <br />
-          <code>customer@wine.local</code> / <code>password123</code>
+          )}
         </div>
       </div>
     </div>

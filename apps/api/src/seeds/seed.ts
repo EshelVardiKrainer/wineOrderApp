@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import * as bcrypt from 'bcrypt';
 import { join } from 'path';
 import * as dotenv from 'dotenv';
 
@@ -30,26 +29,15 @@ async function seed() {
   const siteRepo = ds.getRepository(ShippingSite);
 
   // ─── Users ──────────────────────────────────────────────────────────
-  const passwordHash = await bcrypt.hash('password123', 10);
-
+  // SSO users are created on first Google login.
+  // Seed only an admin user for bootstrapping (will be linked to Google on first login).
   const userData = [
     {
       name: 'Admin User',
       email: 'admin@wine.local',
-      passwordHash,
+      googleId: null,
+      avatarUrl: null,
       role: 'ADMIN',
-    },
-    {
-      name: 'Retail Buyer',
-      email: 'retail@wine.local',
-      passwordHash,
-      role: 'RETAIL',
-    },
-    {
-      name: 'Regular Customer',
-      email: 'customer@wine.local',
-      passwordHash,
-      role: 'CUSTOMER',
     },
   ];
 

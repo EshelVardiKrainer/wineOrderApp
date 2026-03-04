@@ -31,11 +31,16 @@ export function GroupOrdersPage() {
 
   const handleCreate = async () => {
     if (!selectedSiteId) return;
+    const amt = Number(minimumAmount);
+    if (isNaN(amt) || amt < 0 || amt > 50000) {
+      setError('Minimum amount must be a number between 0 and 50,000');
+      return;
+    }
     setError('');
     try {
       await api.post<IGroupOrder>('/group-orders', {
         shippingSiteId: selectedSiteId,
-        minimumAmount: minimumAmount ? Number(minimumAmount) : undefined,
+        minimumAmount: amt,
       } satisfies IGroupOrderCreate);
       setSelectedSiteId('');
       setMinimumAmount('');
@@ -87,18 +92,26 @@ export function GroupOrdersPage() {
               </select>
             </div>
             <div className="form-group" style={{ width: 180, marginBottom: 0 }}>
-              <label>Minimum (₪)</label>
+              <label>Minimum (₪) *</label>
               <input
                 type="number"
                 min="0"
-                placeholder="e.g. 500"
+                max="50000"
+                step="1"
+                required
+                placeholder="0 – 50,000"
                 value={minimumAmount}
-                onChange={(e) => setMinimumAmount(e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === '' || (/^\d+$/.test(v) && Number(v) <= 50000)) {
+                    setMinimumAmount(v);
+                  }
+                }}
               />
             </div>
             <button
               className="btn btn--primary"
-              disabled={!selectedSiteId}
+              disabled={!selectedSiteId || minimumAmount === ''}
               onClick={handleCreate}
             >
               Open Group Order

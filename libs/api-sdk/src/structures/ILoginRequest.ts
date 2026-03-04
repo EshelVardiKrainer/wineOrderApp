@@ -1,4 +1,3 @@
-export type ILoginRequest = {
-  email: string;
-  password: string;
+export type IGoogleLoginRequest = {
+  idToken: string;
 };

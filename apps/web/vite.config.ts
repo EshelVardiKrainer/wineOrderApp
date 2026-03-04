@@ -4,6 +4,7 @@ import { resolve } from 'path';
 
 export default defineConfig({
   root: __dirname,
+  envDir: resolve(__dirname, '../..'),
   appType: 'spa',
   plugins: [react()],
   resolve: {

@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuthStore } from '../stores/auth.store';
 import { Navbar } from '../components/Navbar';
 import { LoginPage } from '../pages/LoginPage';
-import { RegisterPage } from '../pages/RegisterPage';
 import { WineCatalogPage } from '../pages/WineCatalogPage';
 import { CartPage } from '../pages/CartPage';
 import { GroupOrdersPage } from '../pages/GroupOrdersPage';
@@ -11,6 +11,8 @@ import { GroupOrderDetailPage } from '../pages/GroupOrderDetailPage';
 import { MyOrdersPage } from '../pages/MyOrdersPage';
 import { AdminPage } from '../pages/AdminPage';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 export function App() {
   const hydrate = useAuthStore((s) => s.hydrate);
@@ -21,12 +23,11 @@ export function App() {
   }, [hydrate]);
 
   return (
-    <>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <Navbar />
       <div className="container">
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
           <Route path="/wines" element={<WineCatalogPage />} />
 
           <Route
@@ -77,6 +78,6 @@ export function App() {
           <Route path="/" element={<Navigate to="/wines" replace />} />
         </Routes>
       </div>
-    </>
+    </GoogleOAuthProvider>
   );
 }

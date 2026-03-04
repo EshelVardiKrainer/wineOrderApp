@@ -2,8 +2,7 @@ import { Controller } from '@nestjs/common';
 import { TypedRoute, TypedBody } from '@nestia/core';
 import { AuthService } from './auth.service';
 import type {
-  ILoginRequest,
-  IRegisterRequest,
+  IGoogleLoginRequest,
   IAuthResponse,
 } from '@wine-order-app/shared-types';
 
@@ -11,15 +10,10 @@ import type {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @TypedRoute.Post('register')
-  async register(
-    @TypedBody() input: IRegisterRequest,
+  @TypedRoute.Post('google')
+  async googleLogin(
+    @TypedBody() input: IGoogleLoginRequest,
   ): Promise<IAuthResponse> {
-    return this.authService.register(input);
-  }
-
-  @TypedRoute.Post('login')
-  async login(@TypedBody() input: ILoginRequest): Promise<IAuthResponse> {
-    return this.authService.login(input);
+    return this.authService.googleLogin(input);
   }
 }

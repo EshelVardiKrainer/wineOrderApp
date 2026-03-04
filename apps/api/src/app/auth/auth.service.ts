@@ -1,74 +1,66 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
+import { OAuth2Client } from 'google-auth-library';
 import { UsersService } from '../users/users.service';
 import type {
-  ILoginRequest,
-  IRegisterRequest,
+  IGoogleLoginRequest,
   IAuthResponse,
 } from '@wine-order-app/shared-types';
 
 @Injectable()
 export class AuthService {
+  private readonly googleClient: OAuth2Client;
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-  ) {}
-
-  async register(input: IRegisterRequest): Promise<IAuthResponse> {
-    const existing = await this.usersService.findByEmail(input.email);
-    if (existing) {
-      throw new ConflictException('Email already registered');
-    }
-
-    const passwordHash = await bcrypt.hash(input.password, 10);
-    const user = await this.usersService.create({
-      name: input.name,
-      email: input.email,
-      passwordHash,
-      role: input.role,
-    });
-
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    return {
-      accessToken: this.jwtService.sign(payload),
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        createdAt: user.createdAt.toISOString(),
-        updatedAt: user.updatedAt.toISOString(),
-      },
-    };
+    private readonly configService: ConfigService,
+  ) {
+    const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID', '');
+    this.googleClient = new OAuth2Client(clientId);
   }
 
-  async login(input: ILoginRequest): Promise<IAuthResponse> {
-    const user = await this.usersService.findByEmail(input.email);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+  async googleLogin(input: IGoogleLoginRequest): Promise<IAuthResponse> {
+    const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID', '');
+
+    let payload;
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken: input.idToken,
+        audience: clientId,
+      });
+      payload = ticket.getPayload();
+    } catch {
+      throw new UnauthorizedException('Invalid Google ID token');
     }
 
-    const passwordValid = await bcrypt.compare(
-      input.password,
-      user.passwordHash,
-    );
-    if (!passwordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+    if (!payload || !payload.email) {
+      throw new UnauthorizedException('Invalid Google token payload');
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const { sub: googleId, email, name, picture } = payload;
+
+    if (!googleId) {
+      throw new UnauthorizedException('Google ID not found in token');
+    }
+
+    const user = await this.usersService.findOrCreateByGoogle({
+      googleId,
+      email,
+      name: name || email.split('@')[0],
+      avatarUrl: picture || null,
+    });
+
+    const jwtPayload = { sub: user.id, email: user.email, role: user.role };
     return {
-      accessToken: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(jwtPayload),
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
+        avatarUrl: user.avatarUrl,
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString(),
       },
