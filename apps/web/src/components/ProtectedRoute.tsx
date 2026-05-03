@@ -14,8 +14,13 @@ export function ProtectedRoute({ children, requiredRole }: Props) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && user.role !== requiredRole) {
-    return <Navigate to="/wines" replace />;
+  if (requiredRole) {
+    // SUPER_ADMIN can access any role-restricted route
+    const hasAccess =
+      user.role === 'SUPER_ADMIN' || user.role === requiredRole;
+    if (!hasAccess) {
+      return <Navigate to="/wines" replace />;
+    }
   }
 
   return <>{children}</>;

@@ -44,3 +44,27 @@ export const api = {
     }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 };
+
+// ── User Management API ───────────────────────────────────
+
+import type {
+  IUser,
+  IRoleRequest,
+  IRoleRequestCreate,
+} from '@wine-order-app/shared-types';
+
+export const usersApi = {
+  getAll: () => api.get<IUser[]>('/users'),
+  updateRole: (userId: string, role: string) =>
+    api.patch<IUser>(`/users/${userId}/role`, { role }),
+};
+
+export const roleRequestsApi = {
+  create: (data: IRoleRequestCreate) =>
+    api.post<IRoleRequest>('/role-requests', data),
+  getPending: () => api.get<IRoleRequest[]>('/role-requests'),
+  getPendingCount: () => api.get<{ count: number }>('/role-requests/count'),
+  getMine: () => api.get<IRoleRequest[]>('/role-requests/mine'),
+  review: (id: string, status: 'APPROVED' | 'DENIED') =>
+    api.patch<IRoleRequest>(`/role-requests/${id}`, { status }),
+};

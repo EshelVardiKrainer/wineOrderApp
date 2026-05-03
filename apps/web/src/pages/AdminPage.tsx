@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
-import { api } from '../api/client';
+import { api, usersApi, roleRequestsApi } from '../api/client';
+import { useAuthStore } from '../stores/auth.store';
 import type {
   IWine,
   IWineCreate,
@@ -8,16 +9,21 @@ import type {
   IShippingSiteCreate,
   IGroupOrder,
   WineColor,
+  IUser,
+  IRoleRequest,
+  UserRole,
 } from '@wine-order-app/shared-types';
 
 export function AdminPage() {
-  const [tab, setTab] = useState<'orders' | 'wines' | 'sites'>('orders');
+  const user = useAuthStore((s) => s.user);
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const [tab, setTab] = useState<'orders' | 'wines' | 'sites' | 'users'>('orders');
 
   return (
     <div className="animate-in">
       <div className="page-header">
         <h1>Admin Panel</h1>
-        <p>Manage orders, wines, and shipping sites</p>
+        <p>Manage orders, wines, and shipping sites{isSuperAdmin ? ' — and users' : ''}</p>
       </div>
 
       <div className="tab-bar">
@@ -39,11 +45,20 @@ export function AdminPage() {
         >
           Shipping Sites
         </button>
+        {isSuperAdmin && (
+          <button
+            className={`tab-item ${tab === 'users' ? 'tab-item--active' : ''}`}
+            onClick={() => setTab('users')}
+          >
+            Users
+          </button>
+        )}
       </div>
 
       {tab === 'orders' && <OrdersAdmin />}
       {tab === 'wines' && <WinesAdmin />}
       {tab === 'sites' && <SitesAdmin />}
+      {tab === 'users' && isSuperAdmin && <UsersAdmin />}
     </div>
   );
 }
@@ -495,6 +510,238 @@ function SitesAdmin() {
                     Delete
                   </button>
                 </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+// ─── Users & Role Requests Admin (SUPER_ADMIN) ────────────
+
+function UsersAdmin() {
+  const [users, setUsers] = useState<IUser[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<IRoleRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      const [usersData, requestsData] = await Promise.all([
+        usersApi.getAll(),
+        roleRequestsApi.getPending(),
+      ]);
+      setUsers(usersData);
+      setPendingRequests(requestsData);
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const filteredUsers = useMemo(() => {
+    if (!search) return users;
+    const q = search.toLowerCase();
+    return users.filter(
+      (u) =>
+        u.name.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        u.role.toLowerCase().includes(q),
+    );
+  }, [users, search]);
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    setActionLoading(userId);
+    try {
+      await usersApi.updateRole(userId, newRole);
+      await fetchData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to update role');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReview = async (requestId: string, status: 'APPROVED' | 'DENIED') => {
+    setActionLoading(requestId);
+    try {
+      await roleRequestsApi.review(requestId, status);
+      await fetchData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to review request');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  if (loading) return <div className="spinner" />;
+
+  const roleColorMap: Record<string, string> = {
+    SUPER_ADMIN: 'var(--wine-700)',
+    ADMIN: 'var(--info-700)',
+    RETAIL: 'var(--success-700)',
+    CUSTOMER: 'var(--gray-500)',
+  };
+  const roleBgMap: Record<string, string> = {
+    SUPER_ADMIN: 'var(--wine-50)',
+    ADMIN: 'var(--info-50)',
+    RETAIL: 'var(--success-50)',
+    CUSTOMER: 'var(--gray-100)',
+  };
+
+  return (
+    <>
+      {/* ── Pending Role Requests ─── */}
+      {pendingRequests.length > 0 && (
+        <>
+          <div className="section-header">
+            <h2>Pending Role Requests ({pendingRequests.length})</h2>
+          </div>
+          <div className="section-panel" style={{ marginBottom: 'var(--space-xl)' }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Current Role</th>
+                  <th>Requested Role</th>
+                  <th>Reason</th>
+                  <th>Date</th>
+                  <th style={{ width: 180 }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingRequests.map((req) => (
+                  <tr key={req.id}>
+                    <td style={{ fontWeight: 600, color: 'var(--gray-900)' }}>{req.user.name}</td>
+                    <td className="text-muted">{req.user.email}</td>
+                    <td>
+                      <span style={{
+                        padding: '3px 10px',
+                        borderRadius: '999px',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        background: roleBgMap[req.user.role] || 'var(--gray-100)',
+                        color: roleColorMap[req.user.role] || 'var(--gray-600)',
+                      }}>{req.user.role}</span>
+                    </td>
+                    <td>
+                      <span style={{
+                        padding: '3px 10px',
+                        borderRadius: '999px',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        background: roleBgMap[req.requestedRole] || 'var(--gray-100)',
+                        color: roleColorMap[req.requestedRole] || 'var(--gray-600)',
+                      }}>{req.requestedRole}</span>
+                    </td>
+                    <td className="text-muted text-sm" style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {req.reason || '—'}
+                    </td>
+                    <td className="text-muted text-sm">{new Date(req.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                          className="btn btn--success btn--small"
+                          disabled={actionLoading === req.id}
+                          onClick={() => handleReview(req.id, 'APPROVED')}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          className="btn btn--danger btn--small"
+                          disabled={actionLoading === req.id}
+                          onClick={() => handleReview(req.id, 'DENIED')}
+                        >
+                          Deny
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      {/* ── All Users ─── */}
+      <div className="section-header">
+        <h2>All Users ({users.length})</h2>
+        <input
+          placeholder="Search users..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            padding: '0.5rem 0.85rem',
+            border: '1.5px solid var(--gray-200)',
+            borderRadius: 'var(--radius-sm)',
+            fontSize: '0.875rem',
+            fontFamily: 'var(--font-sans)',
+            outline: 'none',
+            width: 250,
+          }}
+        />
+      </div>
+      <div className="section-panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Current Role</th>
+              <th>Change Role</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredUsers.map((u) => (
+              <tr key={u.id}>
+                <td style={{ fontWeight: 600, color: 'var(--gray-900)' }}>{u.name}</td>
+                <td className="text-muted">{u.email}</td>
+                <td>
+                  <span style={{
+                    padding: '3px 10px',
+                    borderRadius: '999px',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    background: roleBgMap[u.role] || 'var(--gray-100)',
+                    color: roleColorMap[u.role] || 'var(--gray-600)',
+                  }}>{u.role}</span>
+                </td>
+                <td>
+                  {u.role === 'SUPER_ADMIN' ? (
+                    <span className="text-muted text-sm">—</span>
+                  ) : (
+                    <select
+                      value={u.role}
+                      disabled={actionLoading === u.id}
+                      onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                      style={{
+                        padding: '0.35rem 0.7rem',
+                        borderRadius: '6px',
+                        border: '1.5px solid var(--gray-200)',
+                        fontSize: '0.8rem',
+                        fontFamily: 'var(--font-sans)',
+                        outline: 'none',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <option value="CUSTOMER">CUSTOMER</option>
+                      <option value="RETAIL">RETAIL</option>
+                      <option value="ADMIN">ADMIN</option>
+                    </select>
+                  )}
+                </td>
+                <td className="text-muted text-sm">{new Date(u.createdAt).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>

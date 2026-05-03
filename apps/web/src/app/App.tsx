@@ -10,6 +10,7 @@ import { GroupOrdersPage } from '../pages/GroupOrdersPage';
 import { GroupOrderDetailPage } from '../pages/GroupOrderDetailPage';
 import { MyOrdersPage } from '../pages/MyOrdersPage';
 import { AdminPage } from '../pages/AdminPage';
+import { RoleRequestPage } from '../pages/RoleRequestPage';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
@@ -71,6 +72,15 @@ export function App() {
             element={
               <ProtectedRoute requiredRole="ADMIN">
                 <AdminPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/request-role"
+            element={
+              <ProtectedRoute>
+                <RoleRequestPage />
               </ProtectedRoute>
             }
           />

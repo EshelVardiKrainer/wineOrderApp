@@ -1,7 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store';
 import { useCartStore } from '../stores/cart.store';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { roleRequestsApi } from '../api/client';
 
 export function Navbar() {
   const user = useAuthStore((s) => s.user);
@@ -9,6 +10,7 @@ export function Navbar() {
   const cart = useCartStore((s) => s.cart);
   const fetchCart = useCartStore((s) => s.fetchCart);
   const location = useLocation();
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -16,10 +18,18 @@ export function Navbar() {
     }
   }, [user, fetchCart]);
 
+  useEffect(() => {
+    if (user?.role === 'SUPER_ADMIN') {
+      roleRequestsApi.getPendingCount().then((res) => setPendingCount(res.count)).catch(() => {});
+    }
+  }, [user, location.pathname]);
+
   const cartCount = cart?.items.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
 
   const isActive = (path: string) =>
     location.pathname === path || location.pathname.startsWith(path + '/');
+
+  const isAdminOrSuper = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
   return (
     <nav className="main-nav">
@@ -47,9 +57,37 @@ export function Navbar() {
               My Orders
             </Link>
           )}
-          {user?.role === 'ADMIN' && (
-            <Link to="/admin" className={isActive('/admin') ? 'active' : ''}>
+          {isAdminOrSuper && (
+            <Link to="/admin" className={isActive('/admin') ? 'active' : ''} style={{ position: 'relative' }}>
               Admin
+              {user?.role === 'SUPER_ADMIN' && pendingCount > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: -2,
+                  background: '#ef4444',
+                  color: 'white',
+                  borderRadius: '999px',
+                  minWidth: '18px',
+                  height: '18px',
+                  padding: '0 5px',
+                  fontSize: '0.65rem',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  lineHeight: 1,
+                  animation: 'pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                }}>{pendingCount}</span>
+              )}
+            </Link>
+          )}
+          {user && user.role === 'CUSTOMER' && (
+            <Link
+              to="/request-role"
+              className={isActive('/request-role') ? 'active' : ''}
+            >
+              Request Role
             </Link>
           )}
         </div>

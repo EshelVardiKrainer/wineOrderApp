@@ -9,7 +9,7 @@ import {
 import { CartItem } from '../cart/cart-item.entity';
 import { GroupOrderParticipant } from '../group-orders/entities/group-order-participant.entity';
 
-export type UserRole = 'CUSTOMER' | 'RETAIL' | 'ADMIN';
+export type UserRole = 'CUSTOMER' | 'RETAIL' | 'ADMIN' | 'SUPER_ADMIN';
 
 @Entity('users')
 export class User {
