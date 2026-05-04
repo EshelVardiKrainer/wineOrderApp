@@ -1591,6 +1591,7 @@ table tfoot td {
   padding: var(--space-xl);
   overflow-y: auto;
   flex: 1;
+  background: #fff;
 }
 
 .payment-modal-summary {
