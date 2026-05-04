@@ -1520,7 +1520,6 @@ table tfoot td {
 .payment-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(14, 4, 8, 0.72);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   z-index: 200;
