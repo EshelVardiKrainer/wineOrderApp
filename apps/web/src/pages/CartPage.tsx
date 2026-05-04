@@ -4,8 +4,11 @@ import { useAuthStore } from '../stores/auth.store';
 import { api } from '../api/client';
 import type { IShippingSite, IGroupOrder, IGroupOrderParticipant } from '@wine-order-app/shared-types';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { PayPalCheckout } from '../components/PayPalCheckout';
 
 export function CartPage() {
+  const { t } = useTranslation();
   const cart = useCartStore((s) => s.cart);
   const fetchCart = useCartStore((s) => s.fetchCart);
   const updateItem = useCartStore((s) => s.updateItem);
@@ -18,6 +21,8 @@ export function CartPage() {
   const [openGroupOrder, setOpenGroupOrder] = useState<IGroupOrder | null>(null);
   const [enrolling, setEnrolling] = useState(false);
   const [error, setError] = useState('');
+  const [currency, setCurrency] = useState<'ILS' | 'USD'>('ILS');
+  const [showPayment, setShowPayment] = useState(false);
 
   useEffect(() => {
     fetchCart();
@@ -53,8 +58,8 @@ export function CartPage() {
   return (
     <div className="animate-in">
       <div className="page-header">
-        <h1>Shopping Cart</h1>
-        <p>{itemCount > 0 ? `${itemCount} item${itemCount !== 1 ? 's' : ''} ready for checkout` : 'Your cart is empty'}</p>
+        <h1>{t('cart.title')}</h1>
+        <p>{itemCount > 0 ? `${itemCount} item${itemCount !== 1 ? 's' : ''} ready for checkout` : t('cart.empty')}</p>
       </div>
 
       {error && <div className="error-msg">{error}</div>}
@@ -62,10 +67,10 @@ export function CartPage() {
       {cart.items.length === 0 ? (
         <div className="empty-state" style={{ background: 'white', borderRadius: 'var(--radius-xl)', border: '1px solid var(--gray-200)', boxShadow: 'var(--shadow-card)' }}>
           <span className="empty-state-icon">🛒</span>
-          <h3>Your cart is empty</h3>
-          <p>Browse our catalog to discover and add wines you love.</p>
+          <h3>{t('cart.empty')}</h3>
+          <p>{t('cart.emptyDesc')}</p>
           <Link to="/wines" className="btn btn--primary btn--large" style={{ marginTop: '1.5rem' }}>
-            Browse Catalog →
+            {t('cart.browseCatalog')} →
           </Link>
         </div>
       ) : (
@@ -82,10 +87,10 @@ export function CartPage() {
                 <table>
                   <thead>
                     <tr>
-                      <th>Wine</th>
-                      <th>Price</th>
-                      <th>Quantity</th>
-                      <th>Subtotal</th>
+                      <th>{t('cart.wine')}</th>
+                      <th>{t('cart.price')}</th>
+                      <th>{t('cart.quantity')}</th>
+                      <th>{t('cart.subtotal')}</th>
                       <th style={{ width: 50 }}></th>
                     </tr>
                   </thead>
@@ -181,17 +186,17 @@ export function CartPage() {
                   fontSize: '1.1rem',
                 }}>🤝</div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1rem' }}>Join a Group Order</h3>
+                  <h3 style={{ margin: 0, fontSize: '1rem' }}>{t('cart.enrollTitle')}</h3>
                   <p className="text-muted text-sm" style={{ marginTop: 2 }}>
-                    Select a shipping site to join its active group order
+                    {t('cart.enrollDesc')}
                   </p>
                 </div>
               </div>
 
               <div className="form-group" style={{ maxWidth: 400, marginBottom: 'var(--space-md)' }}>
-                <label>Shipping Site</label>
+                <label>{t('cart.shippingSite')}</label>
                 <select value={selectedSiteId} onChange={(e) => setSelectedSiteId(e.target.value)}>
-                  <option value="">Select a shipping site...</option>
+                  <option value="">{t('cart.selectSite')}</option>
                   {sites.map((site) => (
                     <option key={site.id} value={site.id}>{site.name} — {site.city}</option>
                   ))}
@@ -200,7 +205,7 @@ export function CartPage() {
 
               {selectedSiteId && !openGroupOrder && (
                 <div className="info-box info-box--warning">
-                  No open group order at this site right now. Check back later or select another site.
+                  {t('cart.noGroupOrder')}
                 </div>
               )}
 
@@ -209,14 +214,11 @@ export function CartPage() {
                   <div className="info-box info-box--success" style={{ marginBottom: 'var(--space-md)', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontSize: '1.1rem' }}>✅</span>
                     <div>
-                      <strong>Open group order found!</strong>
-                      <span className="text-sm" style={{ marginLeft: 8 }}>
-                        {openGroupOrder.participants.length} participant{openGroupOrder.participants.length !== 1 ? 's' : ''} already enrolled
-                      </span>
+                      <strong>{t('cart.groupOrderFound', { count: openGroupOrder.participants.length })}</strong>
                     </div>
                   </div>
                   <button className="btn btn--success" disabled={enrolling} onClick={handleEnroll} style={{ minWidth: 180 }}>
-                    {enrolling ? 'Enrolling...' : '✓ Enroll & Submit Order'}
+                    {enrolling ? t('cart.enrolling') : `✓ ${t('cart.enrollSubmit')}`}
                   </button>
                 </div>
               )}
@@ -239,21 +241,76 @@ export function CartPage() {
               ))}
 
               <div className="order-summary-row total">
-                <span>Total</span>
+                <span>{t('cart.total')}</span>
                 <span>₪{cart.totalPrice.toFixed(2)}</span>
               </div>
 
-              <div style={{ marginTop: 'var(--space-lg)', padding: 'var(--space-md)', background: 'var(--gray-50)', borderRadius: 'var(--radius-sm)', fontSize: '0.82rem', color: 'var(--gray-500)', lineHeight: 1.6 }}>
-                Final price confirmed upon group order enrollment. Shipping calculated at checkout.
+              <div style={{ marginTop: 'var(--space-lg)', borderTop: '1px solid var(--gray-100)', paddingTop: 'var(--space-lg)' }}>
+                <button
+                  className="btn btn--primary"
+                  style={{ width: '100%', justifyContent: 'center', marginBottom: 'var(--space-sm)' }}
+                  onClick={() => setShowPayment(true)}
+                >
+                  {t('cart.proceedToPayment')}
+                </button>
+                <Link
+                  to="/wines"
+                  className="btn btn--secondary"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  ← {t('cart.browseCatalog')}
+                </Link>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-              <Link
-                to="/wines"
-                className="btn btn--secondary"
-                style={{ width: '100%', marginTop: 'var(--space-md)', justifyContent: 'center' }}
-              >
-                ← Continue Shopping
-              </Link>
+      {/* ── Payment Modal ── */}
+      {showPayment && (
+        <div className="payment-modal-overlay" onClick={() => setShowPayment(false)}>
+          <div className="payment-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="payment-modal-header">
+              <div>
+                <h2>{t('cart.paymentTitle')}</h2>
+                <p>{t('cart.paymentNote')}</p>
+              </div>
+              <button className="payment-modal-close" onClick={() => setShowPayment(false)}>✕</button>
+            </div>
+            <div className="payment-modal-body">
+              <div className="payment-modal-summary">
+                <span className="label">{t('cart.total')}</span>
+                <span className="amount">
+                  {currency === 'ILS' ? '₪' : '$'}{cart!.totalPrice.toFixed(2)}
+                </span>
+              </div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--gray-500)', marginBottom: 8 }}>
+                {t('cart.currency')}
+              </div>
+              <div className="payment-modal-currency">
+                {(['ILS', 'USD'] as const).map((c) => (
+                  <button key={c} className={currency === c ? 'active' : ''} onClick={() => setCurrency(c)}>
+                    {c === 'ILS' ? '₪ ILS' : '$ USD'}
+                  </button>
+                ))}
+              </div>
+              <PayPalCheckout
+                amount={cart!.totalPrice.toFixed(2)}
+                currency={currency}
+                items={cart!.items.map((i) => ({ name: i.wine.name, quantity: i.quantity, price: i.wine.price }))}
+                onSuccess={(details) => {
+                  setShowPayment(false);
+                  navigate(`/payment/success?orderId=${details.orderID}&paymentId=${details.paymentID}`);
+                }}
+                onError={() => {
+                  setShowPayment(false);
+                  setError('Payment failed. Please try again.');
+                }}
+                onCancel={() => {
+                  setShowPayment(false);
+                  navigate('/payment/cancel');
+                }}
+              />
             </div>
           </div>
         </div>
