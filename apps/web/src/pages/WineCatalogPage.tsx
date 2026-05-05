@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import type { IWineListResponse, IWine, WineColor } from '@wine-order-app/shared-types';
 import { api } from '../api/client';
 import { useAuthStore } from '../stores/auth.store';
@@ -167,7 +168,7 @@ export function WineCatalogPage() {
             </div>
 
             <div className="wine-card-body">
-              <h3>{wine.name}</h3>
+              <Link to={`/wines/${wine.id}`} className="wine-card-name-link"><h3>{wine.name}</h3></Link>
               <p className="region">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
