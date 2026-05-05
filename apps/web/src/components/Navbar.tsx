@@ -19,6 +19,7 @@ export function Navbar() {
   const fetchCart = useCartStore((s) => s.fetchCart);
   const location = useLocation();
   const [pendingCount, setPendingCount] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     if (user) fetchCart();
@@ -30,12 +31,63 @@ export function Navbar() {
     }
   }, [user, location.pathname]);
 
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
   const cartCount = cart?.items.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
 
   const isActive = (path: string) =>
     location.pathname === path || location.pathname.startsWith(path + '/');
 
   const isAdminOrSuper = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+
+  const navLinks = (
+    <>
+      <Link to="/wines" className={isActive('/wines') ? 'active' : ''} onClick={() => setMenuOpen(false)}>
+        Catalog
+      </Link>
+      {user && (
+        <Link to="/group-orders" className={isActive('/group-orders') ? 'active' : ''} onClick={() => setMenuOpen(false)}>
+          Group Orders
+        </Link>
+      )}
+      {user && (
+        <Link to="/my-orders" className={isActive('/my-orders') ? 'active' : ''} onClick={() => setMenuOpen(false)}>
+          My Orders
+        </Link>
+      )}
+      {isAdminOrSuper && (
+        <Link to="/admin" className={isActive('/admin') ? 'active' : ''} style={{ position: 'relative' }} onClick={() => setMenuOpen(false)}>
+          Admin
+          {user?.role === 'SUPER_ADMIN' && pendingCount > 0 && (
+            <span style={{
+              position: 'absolute',
+              top: 2,
+              right: 2,
+              background: '#ef4444',
+              color: 'white',
+              borderRadius: '999px',
+              minWidth: '16px',
+              height: '16px',
+              padding: '0 4px',
+              fontSize: '0.6rem',
+              fontWeight: 800,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              animation: 'pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            }}>{pendingCount}</span>
+          )}
+        </Link>
+      )}
+      {user?.role === 'CUSTOMER' && (
+        <Link to="/request-role" className={isActive('/request-role') ? 'active' : ''} onClick={() => setMenuOpen(false)}>
+          Request Role
+        </Link>
+      )}
+    </>
+  );
 
   return (
     <nav className="main-nav">
@@ -51,48 +103,7 @@ export function Navbar() {
         </Link>
 
         <div className="nav-links">
-          <Link to="/wines" className={isActive('/wines') ? 'active' : ''}>
-            Catalog
-          </Link>
-          {user && (
-            <Link to="/group-orders" className={isActive('/group-orders') ? 'active' : ''}>
-              Group Orders
-            </Link>
-          )}
-          {user && (
-            <Link to="/my-orders" className={isActive('/my-orders') ? 'active' : ''}>
-              My Orders
-            </Link>
-          )}
-          {isAdminOrSuper && (
-            <Link to="/admin" className={isActive('/admin') ? 'active' : ''} style={{ position: 'relative' }}>
-              Admin
-              {user?.role === 'SUPER_ADMIN' && pendingCount > 0 && (
-                <span style={{
-                  position: 'absolute',
-                  top: 2,
-                  right: 2,
-                  background: '#ef4444',
-                  color: 'white',
-                  borderRadius: '999px',
-                  minWidth: '16px',
-                  height: '16px',
-                  padding: '0 4px',
-                  fontSize: '0.6rem',
-                  fontWeight: 800,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  animation: 'pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                }}>{pendingCount}</span>
-              )}
-            </Link>
-          )}
-          {user?.role === 'CUSTOMER' && (
-            <Link to="/request-role" className={isActive('/request-role') ? 'active' : ''}>
-              Request Role
-            </Link>
-          )}
+          {navLinks}
         </div>
       </div>
 
@@ -101,6 +112,7 @@ export function Navbar() {
           <Link
             to="/cart"
             className={`nav-cart-link ${isActive('/cart') ? 'active' : ''}`}
+            onClick={() => setMenuOpen(false)}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
@@ -112,7 +124,7 @@ export function Navbar() {
         )}
 
         {user ? (
-          <div className="nav-user">
+          <div className="nav-user nav-user--desktop">
             <span className="nav-user-name">{user.name.split(' ')[0]}</span>
             <button
               className="btn btn--ghost btn--small"
@@ -125,21 +137,39 @@ export function Navbar() {
         ) : (
           <Link
             to="/login"
-            style={{
-              padding: '7px 20px',
-              background: 'linear-gradient(135deg, var(--wine-700), var(--wine-900))',
-              color: 'white',
-              borderRadius: 'var(--radius-sm)',
-              fontWeight: 600,
-              fontSize: '0.875rem',
-              border: 'none',
-              boxShadow: '0 2px 8px rgba(154,36,61,0.4)',
-            }}
+            className="nav-signin-btn"
+            onClick={() => setMenuOpen(false)}
           >
             Sign In
           </Link>
         )}
+
+        <button
+          className="nav-hamburger"
+          onClick={() => setMenuOpen((o) => !o)}
+          aria-label="Toggle menu"
+        >
+          {menuOpen ? '✕' : '☰'}
+        </button>
       </div>
+
+      {menuOpen && (
+        <div className="nav-mobile-menu">
+          {navLinks}
+          {user && (
+            <div className="nav-mobile-footer">
+              <span className="nav-user-name">{user.name.split(' ')[0]}</span>
+              <button
+                className="btn btn--ghost btn--small"
+                style={{ color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.12)', fontSize: '0.8rem' }}
+                onClick={() => { logout(); setMenuOpen(false); }}
+              >
+                Sign out
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </nav>
   );
 }

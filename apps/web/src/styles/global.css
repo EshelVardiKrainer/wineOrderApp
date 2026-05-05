@@ -243,6 +243,105 @@ nav.main-nav .nav-cart-link:hover {
   border-color: rgba(201,168,76,0.25) !important;
 }
 
+.nav-signin-btn {
+  padding: 7px 20px;
+  background: linear-gradient(135deg, var(--wine-700), var(--wine-900));
+  color: white;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  box-shadow: 0 2px 8px rgba(154,36,61,0.4);
+}
+
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+  padding: 6px 11px;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  line-height: 1;
+  transition: all 0.15s;
+}
+.nav-hamburger:hover { background: rgba(255,255,255,0.08); color: white; }
+
+.nav-mobile-menu {
+  position: absolute;
+  top: 68px;
+  left: 0;
+  right: 0;
+  background: rgba(20, 4, 10, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(201,168,76,0.15);
+  padding: var(--space-sm) var(--space-lg) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 99;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  animation: slide-down 0.18s var(--ease-out);
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.nav-mobile-menu a {
+  padding: 10px var(--space-md);
+  border-radius: var(--radius-sm);
+  color: rgba(255,255,255,0.75);
+  font-size: 0.95rem;
+  font-weight: 500;
+  display: block;
+}
+.nav-mobile-menu a:hover, .nav-mobile-menu a.active {
+  background: rgba(255,255,255,0.07);
+  color: white;
+}
+.nav-mobile-menu a.active { color: var(--gold-400); background: rgba(201,168,76,0.1); }
+
+.nav-mobile-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ── Responsive: Navbar ────────────────────────────────── */
+@media (max-width: 768px) {
+  nav.main-nav { padding: 0 var(--space-md); position: relative; }
+  nav.main-nav .nav-links { display: none; }
+  nav.main-nav .nav-user--desktop { display: none; }
+  nav.main-nav .nav-brand .brand-text span:last-child { display: none; }
+  .nav-hamburger { display: flex; align-items: center; justify-content: center; }
+}
+
+/* ── Responsive: Admin grids ───────────────────────────── */
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); }
+@media (max-width: 640px) {
+  .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
+}
+
+/* ── Responsive: Page header ───────────────────────────── */
+@media (max-width: 640px) {
+  .page-header { padding: var(--space-lg) 0; }
+  .page-header h1 { font-size: clamp(1.6rem, 7vw, 2.5rem); }
+  .section-panel { padding: var(--space-lg); }
+}
+
+/* ── Responsive: Footer ────────────────────────────────── */
+@media (max-width: 640px) {
+  .footer-content { flex-direction: column; align-items: flex-start; gap: var(--space-sm); }
+}
+
 /* ── Buttons ───────────────────────────────────────────── */
 .btn {
   display: inline-flex;

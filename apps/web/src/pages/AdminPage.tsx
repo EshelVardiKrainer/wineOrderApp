@@ -332,7 +332,7 @@ function WinesAdmin() {
           className="section-panel"
           style={{ marginBottom: 'var(--space-lg)', background: 'var(--gray-50)' }}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
+          <div className="form-grid-2">
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label>Name</label>
               <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
@@ -473,7 +473,7 @@ function SitesAdmin() {
           className="section-panel"
           style={{ marginBottom: 'var(--space-lg)', background: 'var(--gray-50)' }}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-md)' }}>
+          <div className="form-grid-3">
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label>Name</label>
               <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
