@@ -468,7 +468,7 @@ nav.main-nav .nav-cart-link:hover {
   padding: var(--space-3xl) var(--space-2xl);
   margin-bottom: var(--space-xl);
   position: relative;
-  overflow: hidden;
+  isolation: isolate;
 }
 .catalog-hero::before {
   content: '';
