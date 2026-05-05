@@ -1367,6 +1367,118 @@ table tfoot td {
 .mb-md { margin-bottom: var(--space-md); }
 .mb-lg { margin-bottom: var(--space-lg); }
 
+/* ── Home Page ─────────────────────────────────────────── */
+.home-hero {
+  background: linear-gradient(160deg, var(--wine-950) 0%, var(--wine-800) 60%, var(--wine-700) 100%);
+  padding: var(--space-3xl) var(--space-xl);
+}
+
+.home-hero-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.home-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: var(--radius-full);
+  padding: 5px 16px;
+  color: var(--gold-300);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-lg);
+}
+
+.home-hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  font-weight: 700;
+  color: white;
+  line-height: 1.15;
+  margin-bottom: var(--space-md);
+}
+
+.home-hero-sub {
+  font-size: clamp(1rem, 2.5vw, 1.15rem);
+  color: rgba(255,255,255,0.65);
+  line-height: 1.7;
+  margin-bottom: var(--space-md);
+}
+
+.home-hero-welcome {
+  font-size: 0.95rem;
+  color: var(--gold-300);
+  font-weight: 600;
+  margin: 0;
+}
+
+.home-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-lg);
+  padding: var(--space-xl) 0;
+}
+
+.home-card {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+
+.home-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.home-card--dark {
+  background: linear-gradient(155deg, var(--wine-950), var(--wine-800));
+  border-color: rgba(201,168,76,0.2);
+}
+
+.home-card-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.home-card-body { flex: 1; }
+
+.home-card-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: var(--space-xs);
+}
+
+.home-card-desc {
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.home-card-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .home-hero { padding: var(--space-2xl) var(--space-lg); }
+  .home-cards { grid-template-columns: 1fr; padding: var(--space-lg) 0; }
+}
+
 /* ── Wine Detail Page ──────────────────────────────────── */
 .wine-detail-back {
   display: inline-flex;
