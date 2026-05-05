@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/auth.store';
 import { useCartStore } from '../stores/cart.store';
 import { useEffect, useState } from 'react';
 import { roleRequestsApi } from '../api/client';
+import { useTranslation } from 'react-i18next';
 
 const WineGlassIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -20,6 +21,7 @@ export function Navbar() {
   const location = useLocation();
   const [pendingCount, setPendingCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (user) fetchCart();
@@ -45,21 +47,21 @@ export function Navbar() {
   const navLinks = (
     <>
       <Link to="/wines" className={isActive('/wines') ? 'active' : ''} onClick={() => setMenuOpen(false)}>
-        Catalog
+        {t('nav.catalog')}
       </Link>
       {user && (
         <Link to="/group-orders" className={isActive('/group-orders') ? 'active' : ''} onClick={() => setMenuOpen(false)}>
-          Group Orders
+          {t('nav.groupOrders')}
         </Link>
       )}
       {user && (
         <Link to="/my-orders" className={isActive('/my-orders') ? 'active' : ''} onClick={() => setMenuOpen(false)}>
-          My Orders
+          {t('nav.myOrders')}
         </Link>
       )}
       {isAdminOrSuper && (
         <Link to="/admin" className={isActive('/admin') ? 'active' : ''} style={{ position: 'relative' }} onClick={() => setMenuOpen(false)}>
-          Admin
+          {t('nav.admin')}
           {user?.role === 'SUPER_ADMIN' && pendingCount > 0 && (
             <span style={{
               position: 'absolute',
@@ -83,7 +85,7 @@ export function Navbar() {
       )}
       {user?.role === 'CUSTOMER' && (
         <Link to="/request-role" className={isActive('/request-role') ? 'active' : ''} onClick={() => setMenuOpen(false)}>
-          Request Role
+          {t('nav.requestRole')}
         </Link>
       )}
     </>
@@ -118,7 +120,7 @@ export function Navbar() {
               <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
             </svg>
-            Cart
+            {t('nav.cart')}
             {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
           </Link>
         )}
@@ -131,7 +133,7 @@ export function Navbar() {
               style={{ color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.12)', fontSize: '0.8rem' }}
               onClick={logout}
             >
-              Sign out
+              {t('nav.signOut')}
             </button>
           </div>
         ) : (
@@ -140,7 +142,7 @@ export function Navbar() {
             className="nav-signin-btn"
             onClick={() => setMenuOpen(false)}
           >
-            Sign In
+            {t('nav.signIn')}
           </Link>
         )}
 
@@ -164,7 +166,7 @@ export function Navbar() {
                 style={{ color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.12)', fontSize: '0.8rem' }}
                 onClick={() => { logout(); setMenuOpen(false); }}
               >
-                Sign out
+                {t('nav.signOut')}
               </button>
             </div>
           )}
