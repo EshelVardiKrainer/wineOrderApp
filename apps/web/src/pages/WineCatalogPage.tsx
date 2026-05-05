@@ -157,7 +157,10 @@ export function WineCatalogPage() {
         {wines.map((wine) => (
           <div key={wine.id} className="wine-card">
             <div className={`wine-card-image wine-card-image--${wine.color}`}>
-              <WineGlass />
+              {wine.imageUrl
+                ? <img src={wine.imageUrl} alt={wine.name} className="wine-card-photo" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                : <WineGlass />
+              }
               {WINE_META[wine.color] && (
                 <span className="wine-card-image-label">
                   <span style={{

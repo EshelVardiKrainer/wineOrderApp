@@ -43,6 +43,20 @@ export const api = {
       body: body ? JSON.stringify(body) : undefined,
     }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+  upload: <T>(path: string, formData: FormData) => {
+    const token = localStorage.getItem('token');
+    return fetch(`${API_BASE}${path}`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || `HTTP ${res.status}`);
+      }
+      return res.json() as Promise<T>;
+    });
+  },
 };
 
 // ── User Management API ───────────────────────────────────

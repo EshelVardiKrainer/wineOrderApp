@@ -663,6 +663,14 @@ nav.main-nav .nav-cart-link:hover {
   height: 70px;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
+.wine-card-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
 .wine-card:hover .wine-card-image-glass { opacity: 0.28; transform: translateY(-54px) scale(1.05); }
 .wine-card-image--red {
   background: linear-gradient(145deg, #1a0810 0%, #4a1420 45%, #7a2038 80%, #9a2840 100%);

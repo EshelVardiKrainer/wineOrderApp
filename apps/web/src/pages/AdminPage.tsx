@@ -285,6 +285,8 @@ function WinesAdmin() {
     vintage: 2024,
     stock: 0,
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   const fetchWines = async () => {
@@ -292,16 +294,27 @@ function WinesAdmin() {
     setWines(res.items);
   };
 
-  useEffect(() => {
-    fetchWines();
-  }, []);
+  useEffect(() => { fetchWines(); }, []);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
+    setImagePreview(file ? URL.createObjectURL(file) : null);
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     try {
-      await api.post<IWine>('/wines', form);
+      const wine = await api.post<IWine>('/wines', form);
+      if (imageFile) {
+        const fd = new FormData();
+        fd.append('image', imageFile);
+        await api.upload<IWine>(`/wines/${wine.id}/image`, fd);
+      }
       setForm({ name: '', color: 'red', description: '', price: 0, region: '', vintage: 2024, stock: 0 });
+      setImageFile(null);
+      setImagePreview(null);
       setShowForm(false);
       fetchWines();
     } catch (err: any) {
@@ -365,6 +378,15 @@ function WinesAdmin() {
             <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
               <label>Description</label>
               <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="A brief description of the wine..." />
+            </div>
+            <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
+              <label>Image <span style={{ fontWeight: 400, color: 'var(--gray-500)' }}>(optional, max 5 MB)</span></label>
+              <input type="file" accept="image/*" onChange={handleImageChange} />
+              {imagePreview && (
+                <div style={{ marginTop: 8 }}>
+                  <img src={imagePreview} alt="preview" style={{ height: 120, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--gray-200)' }} />
+                </div>
+              )}
             </div>
           </div>
           <div style={{ marginTop: 'var(--space-lg)' }}>
