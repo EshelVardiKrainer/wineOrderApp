@@ -87,6 +87,7 @@ body {
   color: var(--gray-800);
   line-height: 1.6;
   min-height: 100vh;
+  overflow-x: clip;
 }
 
 [dir="rtl"] body,
@@ -877,6 +878,8 @@ table tfoot td {
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
   box-shadow: var(--shadow-card);
+  min-width: 0;
+  max-width: 100%;
 }
 .section-panel + .section-panel { margin-top: var(--space-lg); }
 
@@ -1286,6 +1289,7 @@ table tfoot td {
   align-items: start;
 }
 @media (max-width: 900px) { .cart-layout { grid-template-columns: 1fr; } }
+.cart-layout > * { min-width: 0; }
 
 .order-summary-panel {
   background: white;
@@ -1332,7 +1336,7 @@ table tfoot td {
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-in { animation: fade-in-up 0.4s var(--ease-out) both; }
-.stagger > * { animation: fade-in-up 0.4s var(--ease-out) both; }
+.stagger > * { animation: fade-in-up 0.4s var(--ease-out) both; min-width: 0; }
 .stagger > *:nth-child(1) { animation-delay: 0.03s; }
 .stagger > *:nth-child(2) { animation-delay: 0.07s; }
 .stagger > *:nth-child(3) { animation-delay: 0.11s; }
