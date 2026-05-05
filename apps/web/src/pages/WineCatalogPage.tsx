@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { IWineListResponse, IWine, WineColor } from '@wine-order-app/shared-types';
 import { api } from '../api/client';
 import { useAuthStore } from '../stores/auth.store';
@@ -38,8 +38,25 @@ export function WineCatalogPage() {
   const [color, setColor] = useState<WineColor | ''>('');
   const [addingId, setAddingId] = useState<string | null>(null);
   const [regions, setRegions] = useState<string[]>([]);
+  const [regionOpen, setRegionOpen] = useState(false);
+  const regionRef = useRef<HTMLDivElement>(null);
   const user = useAuthStore((s) => s.user);
   const addItem = useCartStore((s) => s.addItem);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (regionRef.current && !regionRef.current.contains(e.target as Node)) {
+        setRegionOpen(false);
+      }
+    };
+    const onScroll = () => setRegionOpen(false);
+    document.addEventListener('mousedown', handler);
+    document.addEventListener('scroll', onScroll, true);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('scroll', onScroll, true);
+    };
+  }, []);
 
   useEffect(() => {
     api.get<IWineListResponse>('/wines?limit=100').then((res) => {
@@ -83,16 +100,32 @@ export function WineCatalogPage() {
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
-            <select
-              className="catalog-hero-input catalog-hero-select"
-              value={region}
-              onChange={(e) => { setRegion(e.target.value); setPage(1); }}
-            >
-              <option value="">📍  All regions</option>
-              {regions.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
+            <div ref={regionRef} className="region-dropdown">
+              <button
+                type="button"
+                className="catalog-hero-input region-dropdown-trigger"
+                onClick={() => setRegionOpen((o) => !o)}
+              >
+                <span>📍  {region || 'All regions'}</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6, flexShrink: 0, transform: regionOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              {regionOpen && (
+                <div className="region-dropdown-menu">
+                  {[{ value: '', label: '📍  All regions' }, ...regions.map((r) => ({ value: r, label: r }))].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={`region-dropdown-item${region === opt.value ? ' region-dropdown-item--active' : ''}`}
+                      onClick={() => { setRegion(opt.value); setPage(1); setRegionOpen(false); }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <span className="catalog-hero-count">
               {total} wine{total !== 1 ? 's' : ''}
             </span>
