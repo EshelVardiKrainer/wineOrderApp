@@ -76,7 +76,7 @@ export function MyOrdersPage() {
           {siteGroups.map((sg) => (
             <div key={sg.site.id} className="section-panel" style={{ marginBottom: 'var(--space-lg)', padding: 0, overflow: 'hidden' }}>
               {/* Site Header */}
-              <div style={{
+              <div className="site-order-header" style={{
                 background: 'linear-gradient(135deg, var(--wine-950) 0%, var(--wine-800) 100%)',
                 padding: 'var(--space-lg) var(--space-xl)',
                 display: 'flex',

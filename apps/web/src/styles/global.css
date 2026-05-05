@@ -342,6 +342,34 @@ nav.main-nav .nav-cart-link:hover {
   .footer-content { flex-direction: column; align-items: flex-start; gap: var(--space-sm); }
 }
 
+/* ── Role Request layout ───────────────────────────────── */
+.role-request-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--space-xl);
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .role-request-layout { grid-template-columns: 1fr; }
+}
+
+/* ── My Orders: site header mobile ────────────────────── */
+@media (max-width: 640px) {
+  .site-order-header {
+    padding: var(--space-md) var(--space-lg) !important;
+  }
+  .site-order-header .site-total-box {
+    width: 100%;
+    text-align: left !important;
+  }
+}
+
+/* ── Cart table: hide Price col, fold into Subtotal ───── */
+@media (max-width: 640px) {
+  .cart-table-price { display: none; }
+  .cart-layout .qty-control { flex-wrap: nowrap; }
+}
+
 /* ── Buttons ───────────────────────────────────────────── */
 .btn {
   display: inline-flex;

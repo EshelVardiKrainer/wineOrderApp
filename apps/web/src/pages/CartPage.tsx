@@ -88,7 +88,7 @@ export function CartPage() {
                   <thead>
                     <tr>
                       <th>{t('cart.wine')}</th>
-                      <th>{t('cart.price')}</th>
+                      <th className="cart-table-price">{t('cart.price')}</th>
                       <th>{t('cart.quantity')}</th>
                       <th>{t('cart.subtotal')}</th>
                       <th style={{ width: 50 }}></th>
@@ -125,7 +125,7 @@ export function CartPage() {
                             </div>
                           </div>
                         </td>
-                        <td style={{ fontWeight: 600, color: 'var(--gray-700)' }}>₪{item.wine.price.toFixed(2)}</td>
+                        <td className="cart-table-price" style={{ fontWeight: 600, color: 'var(--gray-700)' }}>₪{item.wine.price.toFixed(2)}</td>
                         <td>
                           <div className="qty-control">
                             <button onClick={() => updateItem(item.id, { quantity: item.quantity - 1 })}>−</button>

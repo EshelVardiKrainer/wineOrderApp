@@ -63,7 +63,7 @@ export function RoleRequestPage() {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 'var(--space-xl)', alignItems: 'start' }}>
+      <div className="role-request-layout">
         <div>
           {/* ── Form / Pending Notice ── */}
           {!hasPending ? (
