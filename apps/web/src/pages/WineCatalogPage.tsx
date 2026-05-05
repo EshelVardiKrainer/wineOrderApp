@@ -38,6 +38,7 @@ export function WineCatalogPage() {
   const [region, setRegion] = useState('');
   const [color, setColor] = useState<WineColor | ''>('');
   const [addingId, setAddingId] = useState<string | null>(null);
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [regions, setRegions] = useState<string[]>([]);
   const [regionOpen, setRegionOpen] = useState(false);
   const regionRef = useRef<HTMLDivElement>(null);
@@ -80,9 +81,13 @@ export function WineCatalogPage() {
 
   useEffect(() => { fetchWines(); }, [page, search, region, color]);
 
+  const getQty = (id: string) => quantities[id] ?? 1;
+  const setQty = (id: string, val: number) =>
+    setQuantities((q) => ({ ...q, [id]: Math.max(1, Math.min(val, 99)) }));
+
   const handleAddToCart = async (wine: IWine) => {
     setAddingId(wine.id);
-    await addItem({ wineId: wine.id, quantity: 1 });
+    await addItem({ wineId: wine.id, quantity: getQty(wine.id) });
     setTimeout(() => setAddingId(null), 700);
   };
 
@@ -196,12 +201,18 @@ export function WineCatalogPage() {
                   {wine.stock > 0 ? `${wine.stock} in stock` : 'Out of stock'}
                 </span>
                 {user && wine.stock > 0 && (
-                  <button
-                    className="btn btn--primary btn--small"
-                    onClick={() => handleAddToCart(wine)}
-                    disabled={addingId === wine.id}
-                    style={addingId === wine.id ? { background: 'var(--success-700)', boxShadow: 'none' } : {}}
-                  >
+                  <div className="wine-card-add-row">
+                    <div className="qty-control qty-control--sm">
+                      <button onClick={() => setQty(wine.id, getQty(wine.id) - 1)}>−</button>
+                      <span>{getQty(wine.id)}</span>
+                      <button onClick={() => setQty(wine.id, getQty(wine.id) + 1)}>+</button>
+                    </div>
+                    <button
+                      className="btn btn--primary btn--small"
+                      onClick={() => handleAddToCart(wine)}
+                      disabled={addingId === wine.id}
+                      style={addingId === wine.id ? { background: 'var(--success-700)', boxShadow: 'none' } : {}}
+                    >
                     {addingId === wine.id ? (
                       <>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -217,7 +228,8 @@ export function WineCatalogPage() {
                         Add to Cart
                       </>
                     )}
-                  </button>
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

@@ -744,6 +744,22 @@ nav.main-nav .nav-cart-link:hover {
   justify-content: space-between;
   padding-top: var(--space-md);
   border-top: 1px solid var(--gray-100);
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+.wine-card-add-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.qty-control--sm button {
+  width: 24px;
+  height: 24px;
+  font-size: 0.9rem;
+}
+.qty-control--sm span {
+  min-width: 24px;
+  font-size: 0.85rem;
 }
 
 /* ── Badges ────────────────────────────────────────────── */
