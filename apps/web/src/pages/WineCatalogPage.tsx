@@ -37,8 +37,16 @@ export function WineCatalogPage() {
   const [region, setRegion] = useState('');
   const [color, setColor] = useState<WineColor | ''>('');
   const [addingId, setAddingId] = useState<string | null>(null);
+  const [regions, setRegions] = useState<string[]>([]);
   const user = useAuthStore((s) => s.user);
   const addItem = useCartStore((s) => s.addItem);
+
+  useEffect(() => {
+    api.get<IWineListResponse>('/wines?limit=100').then((res) => {
+      const unique = Array.from(new Set(res.items.map((w) => w.region))).sort();
+      setRegions(unique);
+    });
+  }, []);
 
   const fetchWines = async () => {
     const params = new URLSearchParams();
@@ -75,14 +83,16 @@ export function WineCatalogPage() {
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
-            <input
-              className="catalog-hero-input"
-              type="text"
-              placeholder="📍  Filter by region..."
+            <select
+              className="catalog-hero-input catalog-hero-select"
               value={region}
               onChange={(e) => { setRegion(e.target.value); setPage(1); }}
-              style={{ minWidth: 200 }}
-            />
+            >
+              <option value="">📍  All regions</option>
+              {regions.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
             <span className="catalog-hero-count">
               {total} wine{total !== 1 ? 's' : ''}
             </span>

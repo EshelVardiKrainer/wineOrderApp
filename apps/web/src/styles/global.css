@@ -522,6 +522,8 @@ nav.main-nav .nav-cart-link:hover {
   backdrop-filter: blur(8px);
 }
 .catalog-hero-input::placeholder { color: rgba(255,255,255,0.4); }
+.catalog-hero-select { cursor: pointer; }
+.catalog-hero-select option { background: var(--wine-950); color: white; }
 .catalog-hero-input:focus {
   border-color: var(--gold-400);
   background: rgba(255,255,255,0.15);
