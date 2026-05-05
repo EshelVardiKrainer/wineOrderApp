@@ -1814,9 +1814,9 @@ table tfoot td {
   -webkit-backdrop-filter: blur(6px);
   z-index: 200;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: var(--space-lg);
+  padding: 84px var(--space-lg) var(--space-lg);
   animation: fade-in 0.2s var(--ease-out);
 }
 
@@ -1826,7 +1826,7 @@ table tfoot td {
   box-shadow: 0 8px 40px rgba(14, 4, 8, 0.22);
   width: 100%;
   max-width: 480px;
-  max-height: 90vh;
+  max-height: calc(100vh - 84px - var(--space-lg));
   display: flex;
   flex-direction: column;
   overflow: hidden;
