@@ -4,6 +4,7 @@ import { useCartStore } from '../stores/cart.store';
 import { useEffect, useState } from 'react';
 import { roleRequestsApi } from '../api/client';
 import { useTranslation } from 'react-i18next';
+import { Menu, X } from 'lucide-react';
 
 const WineGlassIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -151,7 +152,7 @@ export function Navbar() {
           onClick={() => setMenuOpen((o) => !o)}
           aria-label="Toggle menu"
         >
-          {menuOpen ? '✕' : '☰'}
+          {menuOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
       </div>
 

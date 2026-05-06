@@ -1,7 +1,9 @@
 import { useEffect, useState, useMemo } from 'react';
+import type { ReactNode } from 'react';
 import { api } from '../api/client';
 import { Link } from 'react-router-dom';
 import type { IGroupOrderParticipant, IGroupOrder, IShippingSite } from '@wine-order-app/shared-types';
+import { LockOpen, Lock, Send, Truck, ClipboardList } from 'lucide-react';
 
 interface SiteGroup {
   site: IShippingSite;
@@ -9,11 +11,11 @@ interface SiteGroup {
   siteTotal: number;
 }
 
-const STATUS_STYLES: Record<string, { color: string; bg: string; border: string; icon: string }> = {
-  open:      { color: 'var(--success-700)', bg: 'var(--success-50)', border: 'rgba(16,185,129,0.2)',  icon: '🔓' },
-  closed:    { color: 'var(--warning-700)', bg: 'var(--warning-50)', border: 'rgba(245,158,11,0.2)',  icon: '🔒' },
-  submitted: { color: 'var(--info-700)',    bg: 'var(--info-50)',    border: 'rgba(59,130,246,0.2)',  icon: '📤' },
-  shipped:   { color: '#065f46',            bg: '#ecfdf5',           border: 'rgba(5,150,105,0.2)',  icon: '🚚' },
+const STATUS_STYLES: Record<string, { color: string; bg: string; border: string; icon: ReactNode }> = {
+  open:      { color: 'var(--success-700)', bg: 'var(--success-50)', border: 'rgba(16,185,129,0.2)',  icon: <LockOpen size={16} /> },
+  closed:    { color: 'var(--warning-700)', bg: 'var(--warning-50)', border: 'rgba(245,158,11,0.2)',  icon: <Lock size={16} /> },
+  submitted: { color: 'var(--info-700)',    bg: 'var(--info-50)',    border: 'rgba(59,130,246,0.2)',  icon: <Send size={16} /> },
+  shipped:   { color: '#065f46',            bg: '#ecfdf5',           border: 'rgba(5,150,105,0.2)',  icon: <Truck size={16} /> },
 };
 
 export function MyOrdersPage() {
@@ -64,7 +66,7 @@ export function MyOrdersPage() {
 
       {siteGroups.length === 0 ? (
         <div className="empty-state section-panel">
-          <span className="empty-state-icon">📋</span>
+          <span className="empty-state-icon"><ClipboardList size={40} strokeWidth={1.5} /></span>
           <h3>No orders yet</h3>
           <p>You haven't enrolled in any group orders. Head to the catalog to browse wines and join a group order.</p>
           <Link to="/wines" className="btn btn--primary" style={{ marginTop: 'var(--space-lg)' }}>

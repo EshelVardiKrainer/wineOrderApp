@@ -1,17 +1,19 @@
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store';
 import { useTranslation } from 'react-i18next';
+import type { ReactNode } from 'react';
+import { Wine, LogIn, ShoppingCart, Users, ClipboardList, Settings } from 'lucide-react';
 
-const CARDS_GUEST = [
-  { icon: '🍷', titleKey: 'home.browseWines', descKey: 'home.browseWinesDesc', labelKey: 'home.viewCatalog', to: '/wines' },
-  { icon: '🔑', titleKey: 'home.signIn',      descKey: 'home.signInDesc',      labelKey: 'home.signIn',      to: '/login' },
+const CARDS_GUEST: { icon: ReactNode; titleKey: string; descKey: string; labelKey: string; to: string }[] = [
+  { icon: <Wine size={28} />, titleKey: 'home.browseWines', descKey: 'home.browseWinesDesc', labelKey: 'home.viewCatalog', to: '/wines' },
+  { icon: <LogIn size={28} />, titleKey: 'home.signIn',     descKey: 'home.signInDesc',      labelKey: 'home.signIn',      to: '/login' },
 ];
 
-const CARDS_USER = [
-  { icon: '🍷', titleKey: 'home.browseWines',  descKey: 'home.browseWinesDesc',  labelKey: 'home.viewCatalog', to: '/wines' },
-  { icon: '🛒', titleKey: 'home.yourCart',     descKey: 'home.yourCartDesc',     labelKey: 'home.viewCart',    to: '/cart' },
-  { icon: '🤝', titleKey: 'home.groupOrders',  descKey: 'home.groupOrdersDesc',  labelKey: 'home.viewOrders',  to: '/group-orders' },
-  { icon: '📋', titleKey: 'home.myOrders',     descKey: 'home.welcomeBackDesc',  labelKey: 'home.myOrders',    to: '/my-orders' },
+const CARDS_USER: { icon: ReactNode; titleKey: string; descKey: string; labelKey: string; to: string }[] = [
+  { icon: <Wine size={28} />,          titleKey: 'home.browseWines', descKey: 'home.browseWinesDesc', labelKey: 'home.viewCatalog', to: '/wines' },
+  { icon: <ShoppingCart size={28} />,  titleKey: 'home.yourCart',    descKey: 'home.yourCartDesc',    labelKey: 'home.viewCart',    to: '/cart' },
+  { icon: <Users size={28} />,         titleKey: 'home.groupOrders', descKey: 'home.groupOrdersDesc', labelKey: 'home.viewOrders',  to: '/group-orders' },
+  { icon: <ClipboardList size={28} />, titleKey: 'home.myOrders',    descKey: 'home.welcomeBackDesc', labelKey: 'home.myOrders',    to: '/my-orders' },
 ];
 
 export function HomePage() {
@@ -25,7 +27,9 @@ export function HomePage() {
       {/* Hero */}
       <div className="home-hero">
         <div className="home-hero-inner">
-          <div className="home-hero-badge">🍷 Wine Market</div>
+          <div className="home-hero-badge" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Wine size={14} /> Wine Market
+          </div>
           <h1 className="home-hero-title">{t('home.welcome')}</h1>
           <p className="home-hero-sub">{t('home.subtitle')}</p>
           {user && (
@@ -51,7 +55,7 @@ export function HomePage() {
           ))}
           {user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && (
             <div className="home-card home-card--dark">
-              <div className="home-card-icon">⚙️</div>
+              <div className="home-card-icon"><Settings size={28} /></div>
               <div className="home-card-body">
                 <h3 className="home-card-title" style={{ color: 'var(--gold-300)' }}>{t('home.adminPanel')}</h3>
                 <p className="home-card-desc" style={{ color: 'rgba(255,255,255,0.55)' }}>{t('home.welcomeBackDesc')}</p>
