@@ -21,7 +21,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  const port = process.env['API_PORT'] || 3000;
+  const port = process.env['PORT'] || process.env['API_PORT'] || 3000;
   await app.listen(port);
   console.log(`🍷 Wine Order API running on http://localhost:${port}/api`);
 }

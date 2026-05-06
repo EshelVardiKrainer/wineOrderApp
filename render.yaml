@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: wine-order-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npx ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json --transpile-only apps/api/src/main.ts
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_MODE
+        value: sandbox
