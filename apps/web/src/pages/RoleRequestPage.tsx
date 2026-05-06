@@ -3,6 +3,12 @@ import { roleRequestsApi } from '../api/client';
 import { useAuthStore } from '../stores/auth.store';
 import type { IRoleRequest } from '@wine-order-app/shared-types';
 
+const STATUS_STYLES: Record<string, { color: string; bg: string; border: string; icon: string }> = {
+  PENDING:  { color: 'var(--warning-700)', bg: 'var(--warning-50)', border: 'rgba(245,158,11,0.2)',  icon: '⏳' },
+  APPROVED: { color: 'var(--success-700)', bg: 'var(--success-50)', border: 'rgba(16,185,129,0.2)',  icon: '✅' },
+  DENIED:   { color: 'var(--danger-700)',  bg: 'var(--danger-50)',  border: 'rgba(239,68,68,0.2)',   icon: '❌' },
+};
+
 export function RoleRequestPage() {
   const user = useAuthStore((s) => s.user);
   const [requests, setRequests] = useState<IRoleRequest[]>([]);
@@ -24,9 +30,7 @@ export function RoleRequestPage() {
     }
   };
 
-  useEffect(() => {
-    fetchRequests();
-  }, []);
+  useEffect(() => { fetchRequests(); }, []);
 
   const hasPending = requests.some((r) => r.status === 'PENDING');
 
@@ -37,7 +41,7 @@ export function RoleRequestPage() {
     setSubmitting(true);
     try {
       await roleRequestsApi.create({ requestedRole, reason: reason || undefined });
-      setSuccess('Your role request has been submitted! The super admin will review it.');
+      setSuccess('Your role request has been submitted successfully. A super admin will review it shortly.');
       setReason('');
       await fetchRequests();
     } catch (err: any) {
@@ -47,29 +51,6 @@ export function RoleRequestPage() {
     }
   };
 
-  const statusBadge = (status: string) => {
-    const map: Record<string, { bg: string; color: string }> = {
-      PENDING: { bg: 'var(--warning-50)', color: 'var(--warning-700)' },
-      APPROVED: { bg: 'var(--success-50)', color: 'var(--success-700)' },
-      DENIED: { bg: 'var(--danger-50)', color: 'var(--danger-700)' },
-    };
-    const style = map[status] || { bg: 'var(--gray-100)', color: 'var(--gray-600)' };
-    return (
-      <span
-        style={{
-          padding: '3px 10px',
-          borderRadius: '999px',
-          fontSize: '0.75rem',
-          fontWeight: 600,
-          background: style.bg,
-          color: style.color,
-        }}
-      >
-        {status}
-      </span>
-    );
-  };
-
   if (loading) return <div className="spinner" />;
 
   return (
@@ -77,111 +58,170 @@ export function RoleRequestPage() {
       <div className="page-header">
         <h1>Request a Role</h1>
         <p>
-          You are currently a <strong>{user?.role}</strong>. Submit a request to
-          become an Admin or Retailer.
+          You're currently a <strong style={{ color: 'var(--wine-700)' }}>{user?.role}</strong>.
+          Submit a request to upgrade your access level.
         </p>
       </div>
 
-      {/* ── Submit Request Form ────────────────── */}
-      {!hasPending ? (
-        <div className="section-panel" style={{ maxWidth: 520, marginBottom: 'var(--space-xl)' }}>
-          <h3 style={{ marginBottom: 'var(--space-md)', fontSize: '1rem' }}>
-            New Role Request
-          </h3>
+      <div className="role-request-layout">
+        <div>
+          {/* ── Form / Pending Notice ── */}
+          {!hasPending ? (
+            <div className="section-panel">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 'var(--space-xl)' }}>
+                <div style={{
+                  width: 44, height: 44,
+                  background: 'var(--wine-50)',
+                  border: '1px solid var(--wine-100)',
+                  borderRadius: 12,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.3rem',
+                }}>🔑</div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.05rem' }}>New Role Request</h3>
+                  <p className="text-muted text-sm" style={{ marginTop: 2 }}>
+                    Requests are reviewed by the super administrator
+                  </p>
+                </div>
+              </div>
 
-          {error && <div className="error-msg">{error}</div>}
-          {success && (
-            <div className="info-box info-box--success" style={{ marginBottom: 'var(--space-md)' }}>
-              {success}
+              {error && <div className="error-msg">{error}</div>}
+              {success && (
+                <div className="info-box info-box--success" style={{ marginBottom: 'var(--space-lg)' }}>
+                  {success}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                  <label>Requested Role</label>
+                  <select value={requestedRole} onChange={(e) => setRequestedRole(e.target.value as 'ADMIN' | 'RETAIL')}>
+                    <option value="ADMIN">Admin — Manage group orders and wines</option>
+                    <option value="RETAIL">Retailer — Access retail pricing and features</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Reason (optional)</label>
+                  <textarea
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    placeholder="Briefly explain why you need this role..."
+                    rows={4}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1rem',
+                      border: '1.5px solid var(--gray-200)',
+                      borderRadius: 'var(--radius-sm)',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '0.925rem',
+                      color: 'var(--gray-800)',
+                      outline: 'none',
+                      resize: 'vertical',
+                      boxSizing: 'border-box',
+                      transition: 'border-color 0.2s, box-shadow 0.2s',
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--wine-400)';
+                      e.currentTarget.style.boxShadow = '0 0 0 4px var(--wine-50)';
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--gray-200)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+                <button type="submit" className="btn btn--primary" disabled={submitting}>
+                  {submitting ? 'Submitting...' : 'Submit Request →'}
+                </button>
+              </form>
+            </div>
+          ) : (
+            <div className="section-panel" style={{ textAlign: 'center', padding: 'var(--space-3xl)' }}>
+              <div style={{ fontSize: '3rem', marginBottom: 'var(--space-md)' }}>⏳</div>
+              <h3 style={{ marginBottom: 'var(--space-sm)' }}>Request Under Review</h3>
+              <p className="text-muted" style={{ maxWidth: 360, margin: '0 auto' }}>
+                Your role request is pending review. The super admin will approve or deny it shortly. You'll be notified once a decision is made.
+              </p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label>Requested Role</label>
-              <select
-                value={requestedRole}
-                onChange={(e) => setRequestedRole(e.target.value as 'ADMIN' | 'RETAIL')}
-              >
-                <option value="ADMIN">Admin</option>
-                <option value="RETAIL">Retailer</option>
-              </select>
+          {/* ── History ── */}
+          {requests.length > 0 && (
+            <div className="section-panel" style={{ marginTop: 'var(--space-lg)' }}>
+              <h3 style={{ marginBottom: 'var(--space-lg)', fontFamily: 'var(--font-display)' }}>Request History</h3>
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Requested Role</th>
+                      <th>Reason</th>
+                      <th>Status</th>
+                      <th>Submitted</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {requests.map((r) => {
+                      const s = STATUS_STYLES[r.status] ?? STATUS_STYLES.PENDING;
+                      return (
+                        <tr key={r.id}>
+                          <td style={{ fontWeight: 700, color: 'var(--gray-900)' }}>{r.requestedRole}</td>
+                          <td className="text-muted text-sm" style={{ maxWidth: 200 }}>{r.reason || '—'}</td>
+                          <td>
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              padding: '4px 12px',
+                              borderRadius: 'var(--radius-full)',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              background: s.bg,
+                              color: s.color,
+                              border: `1px solid ${s.border}`,
+                            }}>
+                              {s.icon} {r.status}
+                            </span>
+                          </td>
+                          <td className="text-muted text-sm">{new Date(r.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div className="form-group">
-              <label>Reason (optional)</label>
-              <textarea
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Why do you need this role?"
-                rows={3}
-                style={{
-                  width: '100%',
-                  padding: '0.7rem 0.9rem',
-                  border: '1.5px solid var(--gray-200)',
-                  borderRadius: 'var(--radius-sm)',
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '0.925rem',
-                  color: 'var(--gray-800)',
-                  outline: 'none',
-                  resize: 'vertical',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-            <button
-              type="submit"
-              className="btn btn--primary"
-              disabled={submitting}
-            >
-              {submitting ? 'Submitting...' : 'Submit Request'}
-            </button>
-          </form>
+          )}
         </div>
-      ) : (
-        <div
-          className="info-box info-box--warning"
-          style={{ marginBottom: 'var(--space-xl)', maxWidth: 520 }}
-        >
-          You already have a pending role request. Please wait for the super admin to review it.
-        </div>
-      )}
 
-      {/* ── Request History ────────────────────── */}
-      {requests.length > 0 && (
-        <>
-          <div className="section-header">
-            <h2>Your Request History</h2>
+        {/* ── Right: Info Panel ── */}
+        <div>
+          <div className="section-panel" style={{ background: 'linear-gradient(155deg, var(--wine-950), var(--wine-800))', border: 'none', color: 'white' }}>
+            <h3 style={{ color: 'white', fontFamily: 'var(--font-display)', marginBottom: 'var(--space-lg)' }}>Available Roles</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+              {[
+                { role: 'Admin', icon: '⚙️', desc: 'Create and manage group orders, wines, and shipping sites.' },
+                { role: 'Retailer', icon: '🏪', desc: 'Access wholesale pricing and retailer-specific features.' },
+              ].map(({ role, icon, desc }) => (
+                <div key={role} style={{
+                  padding: 'var(--space-md)',
+                  background: 'rgba(255,255,255,0.07)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: 'var(--radius-md)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <span style={{ fontSize: '1.1rem' }}>{icon}</span>
+                    <strong style={{ color: 'var(--gold-300)', fontSize: '0.9rem' }}>{role}</strong>
+                  </div>
+                  <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.82rem', margin: 0, lineHeight: 1.55 }}>{desc}</p>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: 'var(--space-lg)', paddingTop: 'var(--space-lg)', borderTop: '1px solid rgba(255,255,255,0.1)', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>
+              Role changes take effect immediately upon approval.
+            </div>
           </div>
-          <div className="section-panel" style={{ maxWidth: 700 }}>
-            <table>
-              <thead>
-                <tr>
-                  <th>Requested Role</th>
-                  <th>Reason</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {requests.map((r) => (
-                  <tr key={r.id}>
-                    <td style={{ fontWeight: 600, color: 'var(--gray-900)' }}>
-                      {r.requestedRole}
-                    </td>
-                    <td className="text-muted text-sm">
-                      {r.reason || '—'}
-                    </td>
-                    <td>{statusBadge(r.status)}</td>
-                    <td className="text-muted text-sm">
-                      {new Date(r.createdAt).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 }

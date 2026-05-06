@@ -19,40 +19,46 @@ export function AdminPage() {
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   const [tab, setTab] = useState<'orders' | 'wines' | 'sites' | 'users'>('orders');
 
+  const TABS = [
+    { id: 'orders', label: 'Orders', icon: '📦' },
+    { id: 'wines',  label: 'Wines',  icon: '🍷' },
+    { id: 'sites',  label: 'Shipping Sites', icon: '🚚' },
+    ...(isSuperAdmin ? [{ id: 'users', label: 'Users', icon: '👥' }] : []),
+  ] as const;
+
   return (
     <div className="animate-in">
-      <div className="page-header">
-        <h1>Admin Panel</h1>
-        <p>Manage orders, wines, and shipping sites{isSuperAdmin ? ' — and users' : ''}</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-xl)', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
+        <div className="page-header" style={{ margin: 0 }}>
+          <h1>Admin Panel</h1>
+          <p>Manage your wine market operations{isSuperAdmin ? ' and users' : ''}</p>
+        </div>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '6px 16px',
+          background: isSuperAdmin ? 'var(--wine-50)' : 'var(--info-50)',
+          border: `1px solid ${isSuperAdmin ? 'var(--wine-100)' : 'rgba(59,130,246,0.2)'}`,
+          borderRadius: 'var(--radius-full)',
+          fontSize: '0.8rem',
+          fontWeight: 700,
+          color: isSuperAdmin ? 'var(--wine-700)' : 'var(--info-700)',
+        }}>
+          {isSuperAdmin ? '⚡ Super Admin' : '🔑 Admin'}
+        </div>
       </div>
 
-      <div className="tab-bar">
-        <button
-          className={`tab-item ${tab === 'orders' ? 'tab-item--active' : ''}`}
-          onClick={() => setTab('orders')}
-        >
-          All Orders
-        </button>
-        <button
-          className={`tab-item ${tab === 'wines' ? 'tab-item--active' : ''}`}
-          onClick={() => setTab('wines')}
-        >
-          Wines
-        </button>
-        <button
-          className={`tab-item ${tab === 'sites' ? 'tab-item--active' : ''}`}
-          onClick={() => setTab('sites')}
-        >
-          Shipping Sites
-        </button>
-        {isSuperAdmin && (
+      <div className="tab-bar" style={{ marginBottom: 'var(--space-xl)' }}>
+        {TABS.map((t) => (
           <button
-            className={`tab-item ${tab === 'users' ? 'tab-item--active' : ''}`}
-            onClick={() => setTab('users')}
+            key={t.id}
+            className={`tab-item ${tab === t.id ? 'tab-item--active' : ''}`}
+            onClick={() => setTab(t.id as typeof tab)}
           >
-            Users
+            {t.icon} {t.label}
           </button>
-        )}
+        ))}
       </div>
 
       {tab === 'orders' && <OrdersAdmin />}
@@ -111,19 +117,21 @@ function OrdersAdmin() {
   return (
     <>
       <div className="section-header">
-        <h2>All Orders</h2>
+        <h2 style={{ fontFamily: 'var(--font-display)' }}>All Orders</h2>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <span className="text-muted text-sm" style={{ fontWeight: 600 }}>Status:</span>
+          <span className="text-muted text-sm" style={{ fontWeight: 600 }}>Filter:</span>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             style={{
-              padding: '0.4rem 0.7rem',
+              padding: '0.5rem 0.85rem',
               borderRadius: 'var(--radius-sm)',
               border: '1.5px solid var(--gray-200)',
-              fontSize: '0.85rem',
+              fontSize: '0.875rem',
               fontFamily: 'var(--font-sans)',
               outline: 'none',
+              background: 'white',
+              cursor: 'pointer',
             }}
           >
             <option value="all">All Statuses</option>
@@ -143,28 +151,32 @@ function OrdersAdmin() {
         </div>
       ) : (
         siteGroups.map((sg) => (
-          <div key={sg.site.id} className="section-panel" style={{ marginBottom: 'var(--space-lg)' }}>
+          <div key={sg.site.id} className="section-panel" style={{ marginBottom: 'var(--space-lg)', padding: 0, overflow: 'hidden' }}>
             <div style={{
+              background: 'linear-gradient(135deg, var(--gray-800) 0%, var(--gray-900) 100%)',
+              padding: 'var(--space-md) var(--space-xl)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: 'var(--space-md)',
-              paddingBottom: 'var(--space-md)',
-              borderBottom: '2px solid var(--gray-100)',
+              flexWrap: 'wrap',
+              gap: 'var(--space-md)',
             }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.05rem' }}>📍 {sg.site.name}</h3>
-                <p className="text-muted text-sm" style={{ margin: '4px 0 0' }}>
+              <div style={{ color: 'white' }}>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', color: 'white', fontFamily: 'var(--font-display)' }}>
+                  📍 {sg.site.name}
+                </h3>
+                <p style={{ margin: '2px 0 0', fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)' }}>
                   {sg.site.address}, {sg.site.city}
                 </p>
               </div>
-              <div className="stat-card" style={{ minWidth: 110, margin: 0, border: 'none', background: 'var(--wine-50)', padding: '0.5rem 1rem' }}>
-                <div className="stat-value" style={{ fontSize: '1.15rem' }}>₪{sg.siteTotal.toFixed(2)}</div>
-                <div className="stat-label">Site Total</div>
+              <div style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--radius-md)', padding: 'var(--space-sm) var(--space-lg)', textAlign: 'center' }}>
+                <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--gold-300)', fontFamily: 'var(--font-display)' }}>₪{sg.siteTotal.toFixed(2)}</div>
+                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Site Total</div>
               </div>
             </div>
+            <div style={{ padding: 'var(--space-lg) var(--space-xl)' }}>
 
-            {sg.orders.map((go) => {
+              {sg.orders.map((go) => {
               const goTotal = go.participants.reduce(
                 (sum, p) =>
                   sum + p.orderItems.reduce((s, i) => s + i.quantity * i.unitPrice, 0),
@@ -251,6 +263,7 @@ function OrdersAdmin() {
                 </div>
               );
             })}
+            </div>
           </div>
         ))
       )}
@@ -272,6 +285,8 @@ function WinesAdmin() {
     vintage: 2024,
     stock: 0,
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   const fetchWines = async () => {
@@ -279,16 +294,27 @@ function WinesAdmin() {
     setWines(res.items);
   };
 
-  useEffect(() => {
-    fetchWines();
-  }, []);
+  useEffect(() => { fetchWines(); }, []);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
+    setImagePreview(file ? URL.createObjectURL(file) : null);
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     try {
-      await api.post<IWine>('/wines', form);
+      const wine = await api.post<IWine>('/wines', form);
+      if (imageFile) {
+        const fd = new FormData();
+        fd.append('image', imageFile);
+        await api.upload<IWine>(`/wines/${wine.id}/image`, fd);
+      }
       setForm({ name: '', color: 'red', description: '', price: 0, region: '', vintage: 2024, stock: 0 });
+      setImageFile(null);
+      setImagePreview(null);
       setShowForm(false);
       fetchWines();
     } catch (err: any) {
@@ -319,7 +345,7 @@ function WinesAdmin() {
           className="section-panel"
           style={{ marginBottom: 'var(--space-lg)', background: 'var(--gray-50)' }}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
+          <div className="form-grid-2">
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label>Name</label>
               <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
@@ -352,6 +378,15 @@ function WinesAdmin() {
             <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
               <label>Description</label>
               <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="A brief description of the wine..." />
+            </div>
+            <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
+              <label>Image <span style={{ fontWeight: 400, color: 'var(--gray-500)' }}>(optional, max 5 MB)</span></label>
+              <input type="file" accept="image/*" onChange={handleImageChange} />
+              {imagePreview && (
+                <div style={{ marginTop: 8 }}>
+                  <img src={imagePreview} alt="preview" style={{ height: 120, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--gray-200)' }} />
+                </div>
+              )}
             </div>
           </div>
           <div style={{ marginTop: 'var(--space-lg)' }}>
@@ -460,7 +495,7 @@ function SitesAdmin() {
           className="section-panel"
           style={{ marginBottom: 'var(--space-lg)', background: 'var(--gray-50)' }}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-md)' }}>
+          <div className="form-grid-3">
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label>Name</label>
               <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
