@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, groupsApi } from '../api/client';
+import { api, groupMembersApi } from '../api/client';
 import { useAuthStore } from '../stores/auth.store';
 import type { IGroupOrder, IGroupOrderCreate, IShippingSite, IGroup } from '@wine-order-app/shared-types';
 
@@ -27,7 +27,7 @@ export function GroupOrdersPage() {
 
   const fetchGroups = async () => {
     if (!user) return;
-    const myGroups = await groupsApi.getMyGroups();
+    const myGroups = await groupMembersApi.getMyGroups();
     setGroups(myGroups);
   };
 
@@ -139,7 +139,7 @@ export function GroupOrdersPage() {
             </div>
             <button
               className="btn btn--primary"
-              disabled={!selectedSiteId || minimumAmount === ''}
+              disabled={!selectedGroupId || minimumAmount === ''}
               onClick={handleCreate}
             >
               Open Order
