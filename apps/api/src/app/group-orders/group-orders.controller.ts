@@ -28,16 +28,20 @@ export class GroupOrdersController {
   @TypedRoute.Get()
   @UseGuards(JwtAuthGuard)
   async findAll(
+    @Req() req: AuthRequest,
     @Query('status') status?: GroupOrderStatus,
   ): Promise<IGroupOrder[]> {
-    return this.groupOrdersService.findAll(status);
+    return this.groupOrdersService.findAll(req.user.id, status);
   }
 
   /** Get a single group order by id */
   @TypedRoute.Get(':id')
   @UseGuards(JwtAuthGuard)
-  async findOne(@TypedParam('id') id: string): Promise<IGroupOrder> {
-    return this.groupOrdersService.findById(id);
+  async findOne(
+    @Req() req: AuthRequest,
+    @TypedParam('id') id: string
+  ): Promise<IGroupOrder> {
+    return this.groupOrdersService.findById(id, req.user.id);
   }
 
   /** Get group orders for a specific site */
@@ -53,9 +57,10 @@ export class GroupOrdersController {
   @TypedRoute.Get(':id/summary')
   @UseGuards(JwtAuthGuard)
   async getSummary(
+    @Req() req: AuthRequest,
     @TypedParam('id') id: string,
   ): Promise<IGroupOrderSummary> {
-    return this.groupOrdersService.getGroupOrderSummary(id);
+    return this.groupOrdersService.getGroupOrderSummary(id, req.user.id, req.user.role);
   }
 
   /** Get the current user's enrollments */
@@ -69,36 +74,35 @@ export class GroupOrdersController {
 
   // ─── Admin: manage group orders ────────────────────────────────────
 
-  /** Admin — open a new group order for a shipping site */
+  /** Admin or Group Owner/Manager — open a new group order for a shipping site */
   @TypedRoute.Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
-  async create(@TypedBody() input: IGroupOrderCreate): Promise<IGroupOrder> {
-    return this.groupOrdersService.createGroupOrder(input);
+  @UseGuards(JwtAuthGuard)
+  async create(
+    @Req() req: AuthRequest,
+    @TypedBody() input: IGroupOrderCreate
+  ): Promise<IGroupOrder> {
+    return this.groupOrdersService.createGroupOrder(input, req.user.id, req.user.role);
   }
 
-  /** Admin — close a group order (no more modifications) */
+  /** Admin or Owner/Manager — close a group order (no more modifications) */
   @TypedRoute.Patch(':id/close')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
-  async close(@TypedParam('id') id: string): Promise<IGroupOrder> {
-    return this.groupOrdersService.closeGroupOrder(id);
+  @UseGuards(JwtAuthGuard)
+  async close(@Req() req: AuthRequest, @TypedParam('id') id: string): Promise<IGroupOrder> {
+    return this.groupOrdersService.closeGroupOrder(id, req.user.id, req.user.role);
   }
 
-  /** Admin — submit a closed group order to supplier */
+  /** Admin or Owner/Manager — submit a closed group order to supplier */
   @TypedRoute.Patch(':id/submit')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
-  async submit(@TypedParam('id') id: string): Promise<IGroupOrder> {
-    return this.groupOrdersService.submitGroupOrder(id);
+  @UseGuards(JwtAuthGuard)
+  async submit(@Req() req: AuthRequest, @TypedParam('id') id: string): Promise<IGroupOrder> {
+    return this.groupOrdersService.submitGroupOrder(id, req.user.id, req.user.role);
   }
 
-  /** Admin — mark group order as shipped */
+  /** Admin or Owner/Manager — mark group order as shipped */
   @TypedRoute.Patch(':id/ship')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
-  async ship(@TypedParam('id') id: string): Promise<IGroupOrder> {
-    return this.groupOrdersService.markShipped(id);
+  @UseGuards(JwtAuthGuard)
+  async ship(@Req() req: AuthRequest, @TypedParam('id') id: string): Promise<IGroupOrder> {
+    return this.groupOrdersService.markShipped(id, req.user.id, req.user.role);
   }
 
   // ─── User: enrollment & order item management ──────────────────────

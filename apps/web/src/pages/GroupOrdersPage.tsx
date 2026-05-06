@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api } from '../api/client';
+import { api, groupsApi } from '../api/client';
 import { useAuthStore } from '../stores/auth.store';
-import type { IGroupOrder, IGroupOrderCreate, IShippingSite } from '@wine-order-app/shared-types';
+import type { IGroupOrder, IGroupOrderCreate, IShippingSite, IGroup } from '@wine-order-app/shared-types';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; border: string; dot: string }> = {
   open:      { label: 'Open',      color: 'var(--success-700)', bg: 'var(--success-50)', border: 'rgba(16,185,129,0.2)', dot: 'var(--success-500)' },
@@ -13,26 +13,52 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; 
 
 export function GroupOrdersPage() {
   const [groupOrders, setGroupOrders] = useState<IGroupOrder[]>([]);
-  const [sites, setSites] = useState<IShippingSite[]>([]);
-  const [selectedSiteId, setSelectedSiteId] = useState('');
+  const [groups, setGroups] = useState<IGroup[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState('');
   const [minimumAmount, setMinimumAmount] = useState('');
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
   const user = useAuthStore((s) => s.user);
-  const isAdmin = user?.role === 'ADMIN';
 
   const fetchOrders = async () => {
     const orders = await api.get<IGroupOrder[]>('/group-orders');
     setGroupOrders(orders);
   };
 
+  const fetchGroups = async () => {
+    if (!user) return;
+    const myGroups = await groupsApi.getMyGroups();
+    setGroups(myGroups);
+  };
+
   useEffect(() => {
     fetchOrders();
-    if (isAdmin) api.get<IShippingSite[]>('/shipping-sites').then(setSites);
-  }, [isAdmin]);
+    fetchGroups();
+  }, [user]);
+
+  const managedGroups = groups.filter((g) => {
+    const me = g.members?.find((m) => m.userId === user?.id);
+    return me && (me.role === 'OWNER' || me.role === 'MANAGER') && g.status === 'ACTIVE';
+  });
+
+  const activeMemberships = groups.filter((g) => {
+    const me = g.members?.find((m) => m.userId === user?.id);
+    return me && me.status === 'ACTIVE' && g.status === 'ACTIVE';
+  });
+
+  const canCreate = user?.role === 'ADMIN' || managedGroups.length > 0;
 
   const handleCreate = async () => {
-    if (!selectedSiteId) return;
+    if (!selectedGroupId) {
+      setError('Please select a group');
+      return;
+    }
+    const group = groups.find(g => g.id === selectedGroupId);
+    if (!group?.shippingSiteId) {
+      setError('Group does not have a shipping site assigned');
+      return;
+    }
+    
     const amt = Number(minimumAmount);
     if (isNaN(amt) || amt < 0 || amt > 50000) {
       setError('Minimum amount must be a number between 0 and 50,000');
@@ -41,16 +67,16 @@ export function GroupOrdersPage() {
     setError('');
     try {
       await api.post<IGroupOrder>('/group-orders', {
-        groupId: '', // TODO: Phase 4
-        shippingSiteId: selectedSiteId,
+        groupId: selectedGroupId,
+        shippingSiteId: group.shippingSiteId,
         minimumAmount: amt,
       } satisfies IGroupOrderCreate);
-      setSelectedSiteId('');
+      setSelectedGroupId('');
       setMinimumAmount('');
       setShowForm(false);
       fetchOrders();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     }
   };
 
@@ -70,7 +96,7 @@ export function GroupOrdersPage() {
           <h1>Group Orders</h1>
           <p>Coordinate group wine purchases across shipping sites</p>
         </div>
-        {isAdmin && (
+        {canCreate && (
           <button
             className="btn btn--primary"
             onClick={() => setShowForm(!showForm)}
@@ -83,18 +109,20 @@ export function GroupOrdersPage() {
       {error && <div className="error-msg">{error}</div>}
 
       {/* ── Create Form ── */}
-      {isAdmin && showForm && (
+      {canCreate && showForm && (
         <div className="section-panel animate-in" style={{ marginBottom: 'var(--space-xl)', background: 'var(--wine-50)', border: '1px solid var(--wine-100)' }}>
           <h3 style={{ margin: '0 0 var(--space-lg)', fontFamily: 'var(--font-display)', color: 'var(--wine-900)' }}>
             Open New Group Order
           </h3>
           <div style={{ display: 'flex', gap: 'var(--space-md)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div className="form-group" style={{ flex: 1, minWidth: 200, marginBottom: 0 }}>
-              <label>Shipping Site</label>
-              <select value={selectedSiteId} onChange={(e) => setSelectedSiteId(e.target.value)}>
-                <option value="">Select a site...</option>
-                {sites.map((site) => (
-                  <option key={site.id} value={site.id}>{site.name} — {site.city}</option>
+              <label>Select Your Group</label>
+              <select value={selectedGroupId} onChange={(e) => setSelectedGroupId(e.target.value)}>
+                <option value="">Select a group...</option>
+                {user?.role === 'ADMIN' ? groups.map((g) => (
+                  <option key={g.id} value={g.id}>{g.name}</option>
+                )) : managedGroups.map((g) => (
+                  <option key={g.id} value={g.id}>{g.name}</option>
                 ))}
               </select>
             </div>
@@ -125,7 +153,7 @@ export function GroupOrdersPage() {
         <div className="empty-state section-panel">
           <span className="empty-state-icon">📦</span>
           <h3>No group orders yet</h3>
-          <p>{isAdmin ? 'Create your first group order using the button above.' : 'Group orders will appear here once they are created by an admin.'}</p>
+          <p>{canCreate ? 'Create your first group order using the button above.' : 'Group orders will appear here once they are created by your group manager.'}</p>
         </div>
       ) : (
         <div className="group-order-cards stagger">
@@ -202,7 +230,7 @@ export function GroupOrdersPage() {
                   <Link to={`/group-orders/${go.id}`} className="btn btn--secondary btn--small">
                     View Details →
                   </Link>
-                  {isAdmin && (
+                  {(user?.role === 'ADMIN' || managedGroups.some(g => g.id === go.groupId)) && (
                     <div style={{ display: 'flex', gap: 8 }}>
                       {go.status === 'open' && (
                         <button className="btn btn--danger btn--small" onClick={() => handleStatusChange(go.id, 'close')}>

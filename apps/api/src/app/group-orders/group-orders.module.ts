@@ -7,10 +7,13 @@ import { GroupOrdersController } from './group-orders.controller';
 import { GroupOrdersService } from './group-orders.service';
 import { CartModule } from '../cart/cart.module';
 
+import { GroupsModule } from '../groups/groups.module';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([GroupOrder, GroupOrderParticipant, OrderItem]),
     CartModule,
+    GroupsModule,
   ],
   controllers: [GroupOrdersController],
   providers: [GroupOrdersService],
