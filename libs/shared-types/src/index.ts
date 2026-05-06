@@ -5,3 +5,4 @@ export * from './lib/shipping-site.interface';
 export * from './lib/group-order.interface';
 export * from './lib/auth.interface';
 export * from './lib/role-request.interface';
+export * from './lib/notification.interface';

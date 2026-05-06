@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { roleRequestsApi } from '../api/client';
 import { useTranslation } from 'react-i18next';
 import { Menu, X } from 'lucide-react';
+import { NotificationBell } from './NotificationBell';
 
 const BrandMark = () => (
   <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -157,6 +158,8 @@ export function Navbar() {
             {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
           </Link>
         )}
+
+        {user && <NotificationBell />}
 
         {user ? (
           <div className="nav-user nav-user--desktop">

@@ -6,11 +6,13 @@ import { OrderItem } from './entities/order-item.entity';
 import { GroupOrdersController } from './group-orders.controller';
 import { GroupOrdersService } from './group-orders.service';
 import { CartModule } from '../cart/cart.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([GroupOrder, GroupOrderParticipant, OrderItem]),
     CartModule,
+    NotificationsModule,
   ],
   controllers: [GroupOrdersController],
   providers: [GroupOrdersService],

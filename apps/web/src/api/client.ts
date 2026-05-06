@@ -65,6 +65,7 @@ import type {
   IUser,
   IRoleRequest,
   IRoleRequestCreate,
+  INotification,
 } from '@wine-order-app/shared-types';
 
 export const usersApi = {
@@ -81,4 +82,11 @@ export const roleRequestsApi = {
   getMine: () => api.get<IRoleRequest[]>('/role-requests/mine'),
   review: (id: string, status: 'APPROVED' | 'DENIED') =>
     api.patch<IRoleRequest>(`/role-requests/${id}`, { status }),
+};
+
+export const notificationsApi = {
+  getAll: () => api.get<INotification[]>('/notifications'),
+  getUnreadCount: () => api.get<{ count: number }>('/notifications/count'),
+  markRead: (id: string) => api.patch<void>(`/notifications/${id}/read`),
+  markAllRead: () => api.patch<void>('/notifications/read-all'),
 };
