@@ -41,6 +41,7 @@ export function GroupOrdersPage() {
     setError('');
     try {
       await api.post<IGroupOrder>('/group-orders', {
+        groupId: '', // TODO: Phase 4
         shippingSiteId: selectedSiteId,
         minimumAmount: amt,
       } satisfies IGroupOrderCreate);

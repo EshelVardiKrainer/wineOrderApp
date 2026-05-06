@@ -31,3 +31,11 @@ export interface IGroupCreateRequest {
   name: string;
   shippingSiteDetails: IShippingSiteCreate;
 }
+
+export interface IGroupMemberRoleUpdate {
+  role: GroupMemberRole;
+}
+
+export interface IGroupInviteRequest {
+  email: string;
+}

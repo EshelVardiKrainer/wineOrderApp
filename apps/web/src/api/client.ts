@@ -37,6 +37,11 @@ export const api = {
       method: 'POST',
       body: body ? JSON.stringify(body) : undefined,
     }),
+  put: <T>(path: string, body?: unknown) =>
+    request<T>(path, {
+      method: 'PUT',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
   patch: <T>(path: string, body?: unknown) =>
     request<T>(path, {
       method: 'PATCH',
@@ -81,4 +86,22 @@ export const roleRequestsApi = {
   getMine: () => api.get<IRoleRequest[]>('/role-requests/mine'),
   review: (id: string, status: 'APPROVED' | 'DENIED') =>
     api.patch<IRoleRequest>(`/role-requests/${id}`, { status }),
+};
+
+// ── Groups API ──────────────────────────────────────────
+
+import type { IGroupCreateRequest, IGroup } from '@wine-order-app/shared-types';
+
+export const groupsApi = {
+  requestGroup: (data: IGroupCreateRequest) => api.post<IGroup>('/groups/request', data),
+  getPendingGroups: () => api.get<IGroup[]>('/groups/pending'),
+  approveGroup: (id: string) => api.put<IGroup>(`/groups/${id}/approve`),
+};
+
+export const groupMembersApi = {
+  getMyGroups: () => api.get<IGroup[]>('/groups/mine'),
+  joinGroup: (groupId: string) => api.post<void>(`/groups/${groupId}/join`),
+  inviteUser: (groupId: string, data: { email: string }) => api.post<void>(`/groups/${groupId}/invite`, data),
+  approveMember: (groupId: string, userId: string) => api.put<void>(`/groups/${groupId}/members/${userId}/approve`),
+  changeMemberRole: (groupId: string, userId: string, data: { role: string }) => api.put<void>(`/groups/${groupId}/members/${userId}/role`, data),
 };

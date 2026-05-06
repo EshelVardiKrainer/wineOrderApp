@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { api, usersApi, roleRequestsApi } from '../api/client';
+import { api, usersApi, roleRequestsApi, groupsApi } from '../api/client';
 import { useAuthStore } from '../stores/auth.store';
 import type {
   IWine,
@@ -17,12 +17,13 @@ import type {
 export function AdminPage() {
   const user = useAuthStore((s) => s.user);
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
-  const [tab, setTab] = useState<'orders' | 'wines' | 'sites' | 'users'>('orders');
+  const [tab, setTab] = useState<'orders' | 'wines' | 'sites' | 'groups' | 'users'>('orders');
 
   const TABS = [
     { id: 'orders', label: 'Orders', icon: '📦' },
     { id: 'wines',  label: 'Wines',  icon: '🍷' },
     { id: 'sites',  label: 'Shipping Sites', icon: '🚚' },
+    { id: 'groups', label: 'Group Requests', icon: '👥' },
     ...(isSuperAdmin ? [{ id: 'users', label: 'Users', icon: '👥' }] : []),
   ] as const;
 
@@ -64,6 +65,7 @@ export function AdminPage() {
       {tab === 'orders' && <OrdersAdmin />}
       {tab === 'wines' && <WinesAdmin />}
       {tab === 'sites' && <SitesAdmin />}
+      {tab === 'groups' && <GroupsAdmin />}
       {tab === 'users' && isSuperAdmin && <UsersAdmin />}
     </div>
   );
@@ -783,5 +785,35 @@ function UsersAdmin() {
         </table>
       </div>
     </>
+  );
+}
+function GroupsAdmin() {
+  const [groups, setGroups] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    groupsApi.getPendingGroups().then(setGroups).finally(() => setLoading(false));
+  }, []);
+
+  const handleApprove = async (id: string) => {
+    await groupsApi.approveGroup(id);
+    setGroups(groups.filter(g => g.id !== id));
+  };
+
+  if (loading) return <div>Loading...</div>;
+
+  return (
+    <div>
+      <h2>Pending Groups</h2>
+      {groups.length === 0 && <p>No pending groups</p>}
+      {groups.map(g => (
+        <div key={g.id} className="card" style={{marginBottom: '1rem'}}>
+          <h4>Group Name: {g.name}</h4>
+          <p>Requested by: {g.members?.find((m: any) => m.role === 'OWNER')?.user?.name}</p>
+          <p>Location: {g.shippingSite?.name} - {g.shippingSite?.address}</p>
+          <button onClick={() => handleApprove(g.id)}>Approve</button>
+        </div>
+      ))}
+    </div>
   );
 }

@@ -11,12 +11,15 @@ import { WinePage } from '../pages/WinePage';
 import { CartPage } from '../pages/CartPage';
 import { GroupOrdersPage } from '../pages/GroupOrdersPage';
 import { GroupOrderDetailPage } from '../pages/GroupOrderDetailPage';
+import { GroupRequestPage } from '../pages/GroupRequestPage';
 import { MyOrdersPage } from '../pages/MyOrdersPage';
 import { AdminPage } from '../pages/AdminPage';
 import { RoleRequestPage } from '../pages/RoleRequestPage';
 import { PaymentSuccessPage } from '../pages/PaymentSuccessPage';
 import { PaymentCancelPage } from '../pages/PaymentCancelPage';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+
+import { GroupManagementPage } from '../pages/GroupManagementPage';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -55,6 +58,24 @@ export function App() {
             element={
               <ProtectedRoute>
                 <GroupOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/groups/request"
+            element={
+              <ProtectedRoute>
+                <GroupRequestPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/groups/manage"
+            element={
+              <ProtectedRoute>
+                <GroupManagementPage />
               </ProtectedRoute>
             }
           />

@@ -8,6 +8,7 @@ import { WinesModule } from './wines/wines.module';
 import { ShippingSitesModule } from './shipping-sites/shipping-sites.module';
 import { CartModule } from './cart/cart.module';
 import { GroupOrdersModule } from './group-orders/group-orders.module';
+import { GroupsModule } from './groups/groups.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { GroupOrdersModule } from './group-orders/group-orders.module';
     ShippingSitesModule,
     CartModule,
     GroupOrdersModule,
+    GroupsModule,
   ],
 })
 export class AppModule {}

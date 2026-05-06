@@ -1,0 +1,21 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
+import { useAuthStore } from '../stores/auth.store';
+const WineGlassIcon = () => (_jsxs("svg", { width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", xmlns: "http://www.w3.org/2000/svg", children: [_jsx("path", { d: "M8 2L16 2L14 10C13.5 13 11 14 11 14L11 20L14 20L14 22L10 22L10 20L13 20L13 14C13 14 10.5 13 10 10L8 2Z", fill: "rgba(255,255,255,0.9)" }), _jsx("ellipse", { cx: "12", cy: "7", rx: "3.5", ry: "2", fill: "rgba(201,168,76,0.4)" }), _jsx("rect", { x: "9", y: "20", width: "6", height: "1.5", rx: "0.75", fill: "rgba(255,255,255,0.7)" })] }));
+export function LoginPage() {
+    const googleLogin = useAuthStore((s) => s.googleLogin);
+    const isLoading = useAuthStore((s) => s.isLoading);
+    const error = useAuthStore((s) => s.error);
+    const navigate = useNavigate();
+    const handleGoogleSuccess = async (response) => {
+        if (response.credential) {
+            await googleLogin(response.credential);
+            const user = useAuthStore.getState().user;
+            if (user)
+                navigate('/wines');
+        }
+    };
+    return (_jsx("div", { className: "auth-wrapper", children: _jsxs("div", { className: "auth-split animate-in", children: [_jsx("div", { className: "auth-split-left", children: _jsxs("div", { className: "auth-split-left-inner", children: [_jsxs("div", { className: "auth-logo", children: [_jsx("div", { className: "logo-icon", children: _jsx(WineGlassIcon, {}) }), _jsx("span", { children: "Wine Market" })] }), _jsxs("h1", { children: ["Discover ", _jsx("em", { children: "exceptional" }), _jsx("br", {}), "wines together"] }), _jsx("p", { className: "auth-tagline", children: "Join a community of wine lovers. Browse curated selections, participate in group orders, and get premium bottles delivered to your door." }), _jsxs("ul", { className: "auth-features", children: [_jsxs("li", { children: [_jsx("div", { className: "feat-icon", children: "\uD83C\uDF77" }), _jsxs("div", { className: "feat-text", children: [_jsx("strong", { children: "Curated Wine Catalog" }), "Hundreds of hand-picked wines from top regions worldwide"] })] }), _jsxs("li", { children: [_jsx("div", { className: "feat-icon", children: "\uD83E\uDD1D" }), _jsxs("div", { className: "feat-text", children: [_jsx("strong", { children: "Group Orders" }), "Team up with colleagues to meet minimums and save on shipping"] })] }), _jsxs("li", { children: [_jsx("div", { className: "feat-icon", children: "\uD83D\uDCE6" }), _jsxs("div", { className: "feat-text", children: [_jsx("strong", { children: "Order Tracking" }), "Follow your orders from enrollment through to delivery"] })] })] }), _jsx("div", { className: "auth-quote", children: _jsx("p", { children: "\"Wine is the most civilized thing in the world.\"" }) })] }) }), _jsx("div", { className: "auth-split-right", children: _jsxs("div", { className: "auth-form-inner", children: [_jsx("h2", { children: "Welcome back" }), _jsx("p", { className: "auth-subtitle", children: "Sign in to access your account, browse the catalog, and manage your orders." }), error && _jsx("div", { className: "error-msg", style: { marginBottom: 'var(--space-lg)' }, children: error }), isLoading ? (_jsxs("div", { style: { textAlign: 'center', padding: 'var(--space-xl)', color: 'var(--gray-500)' }, children: [_jsx("div", { className: "spinner", style: { padding: 'var(--space-md)' } }), "Signing you in..."] })) : (_jsx("div", { style: { display: 'flex', justifyContent: 'center' }, children: _jsx(GoogleLogin, { onSuccess: handleGoogleSuccess, onError: () => console.error('Google login failed'), size: "large", theme: "outline", text: "signin_with", shape: "rectangular", width: "300" }) })), _jsx("div", { className: "auth-divider", children: "Secure sign-in" }), _jsx("div", { className: "auth-form-footer", children: "By signing in, you agree to our Terms of Service and Privacy Policy. Your data is encrypted and never shared." })] }) })] }) }));
+}
+//# sourceMappingURL=LoginPage.js.map
