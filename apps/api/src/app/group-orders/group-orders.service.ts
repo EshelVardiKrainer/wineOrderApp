@@ -39,15 +39,16 @@ export class GroupOrdersService {
 
   async createGroupOrder(input: IGroupOrderCreate): Promise<IGroupOrder> {
     const existing = await this.groupOrderRepo.findOne({
-      where: { shippingSiteId: input.shippingSiteId, status: 'open' },
+      where: { groupId: input.groupId, status: 'open' },
     });
     if (existing) {
       throw new ConflictException(
-        'This site already has an active group order',
+        'This group already has an active open group order',
       );
     }
 
     const go = this.groupOrderRepo.create({
+      groupId: input.groupId,
       shippingSiteId: input.shippingSiteId,
       status: 'open',
       minimumAmount: input.minimumAmount ?? 0,
@@ -364,6 +365,7 @@ export class GroupOrdersService {
 
   private toGroupOrderDto = (go: GroupOrder): IGroupOrder => ({
     id: go.id,
+    groupId: go.groupId,
     shippingSiteId: go.shippingSiteId,
     minimumAmount: Number(go.minimumAmount) || 0,
     shippingSite: {

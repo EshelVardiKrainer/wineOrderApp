@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { GroupOrder } from '../group-orders/entities/group-order.entity';
+import { Group } from '../groups/entities/group.entity';
 
 @Entity('shipping_sites')
 export class ShippingSite {
@@ -30,6 +31,9 @@ export class ShippingSite {
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  @OneToMany(() => Group, (group) => group.shippingSite)
+  groups!: Group[];
 
   @OneToMany(() => GroupOrder, (go) => go.shippingSite)
   groupOrders!: GroupOrder[];

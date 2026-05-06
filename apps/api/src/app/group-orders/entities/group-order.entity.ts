@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { ShippingSite } from '../../shipping-sites/shipping-site.entity';
 import { GroupOrderParticipant } from './group-order-participant.entity';
+import { Group } from '../../groups/entities/group.entity';
 
 export type GroupOrderStatus = 'open' | 'closed' | 'submitted' | 'shipped';
 
@@ -17,6 +18,15 @@ export type GroupOrderStatus = 'open' | 'closed' | 'submitted' | 'shipped';
 export class GroupOrder {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  @Column()
+  groupId!: string;
+
+  @ManyToOne(() => Group, (group) => group.orders, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'groupId' })
+  group!: Group;
 
   @Column()
   shippingSiteId!: string;

@@ -6,6 +6,7 @@ export type GroupOrderStatus = 'open' | 'closed' | 'submitted' | 'shipped';
 
 export interface IGroupOrder {
   id: string;
+  groupId: string;
   shippingSiteId: string;
   shippingSite: IShippingSite;
   status: GroupOrderStatus;
@@ -16,6 +17,7 @@ export interface IGroupOrder {
 }
 
 export interface IGroupOrderCreate {
+  groupId: string;
   shippingSiteId: string;
   minimumAmount?: number;
 }
