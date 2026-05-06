@@ -66,6 +66,10 @@ import type {
   IRoleRequest,
   IRoleRequestCreate,
   INotification,
+  IWishlistItem,
+  IWineReview,
+  IWineReviewCreate,
+  IWineReviewSummary,
 } from '@wine-order-app/shared-types';
 
 export const usersApi = {
@@ -82,6 +86,21 @@ export const roleRequestsApi = {
   getMine: () => api.get<IRoleRequest[]>('/role-requests/mine'),
   review: (id: string, status: 'APPROVED' | 'DENIED') =>
     api.patch<IRoleRequest>(`/role-requests/${id}`, { status }),
+};
+
+export const wishlistApi = {
+  getAll: () => api.get<IWishlistItem[]>('/wishlist'),
+  getIds: () => api.get<string[]>('/wishlist/ids'),
+  add: (wineId: string) => api.post<IWishlistItem>(`/wishlist/${wineId}`),
+  remove: (wineId: string) => api.delete<void>(`/wishlist/${wineId}`),
+};
+
+export const reviewsApi = {
+  getForWine: (wineId: string) => api.get<IWineReviewSummary>(`/wines/${wineId}/reviews`),
+  getMyReview: (wineId: string) => api.get<IWineReview | null>(`/wines/${wineId}/reviews/mine`),
+  upsert: (wineId: string, data: IWineReviewCreate) =>
+    api.post<IWineReview>(`/wines/${wineId}/reviews`, data),
+  delete: (wineId: string) => api.delete<void>(`/wines/${wineId}/reviews`),
 };
 
 export const notificationsApi = {

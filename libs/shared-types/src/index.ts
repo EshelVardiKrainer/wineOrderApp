@@ -6,3 +6,5 @@ export * from './lib/group-order.interface';
 export * from './lib/auth.interface';
 export * from './lib/role-request.interface';
 export * from './lib/notification.interface';
+export * from './lib/wishlist.interface';
+export * from './lib/review.interface';

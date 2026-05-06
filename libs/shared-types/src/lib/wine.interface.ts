@@ -10,6 +10,8 @@ export interface IWine {
   region: string;
   vintage: number;
   stock: number;
+  avgRating: number;
+  reviewCount: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,6 +38,8 @@ export interface IWineUpdate {
   stock?: number;
 }
 
+export type WineSortBy = 'price_asc' | 'price_desc' | 'vintage_desc' | 'vintage_asc' | 'name_asc' | 'rating_desc';
+
 export interface IWineFilter {
   color?: WineColor;
   region?: string;
@@ -44,6 +48,7 @@ export interface IWineFilter {
   minPrice?: number;
   maxPrice?: number;
   search?: string;
+  sortBy?: WineSortBy;
   page?: number;
   limit?: number;
 }

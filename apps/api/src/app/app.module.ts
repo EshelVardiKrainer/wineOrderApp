@@ -9,6 +9,8 @@ import { ShippingSitesModule } from './shipping-sites/shipping-sites.module';
 import { CartModule } from './cart/cart.module';
 import { GroupOrdersModule } from './group-orders/group-orders.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { WishlistModule } from './wishlist/wishlist.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -36,6 +38,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     CartModule,
     GroupOrdersModule,
     NotificationsModule,
+    WishlistModule,
+    ReviewsModule,
   ],
 })
 export class AppModule {}

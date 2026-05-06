@@ -54,9 +54,18 @@ export class WinesService {
       });
     }
 
-    qb.orderBy("CASE wine.color WHEN 'red' THEN 1 WHEN 'rose' THEN 2 WHEN 'white' THEN 3 WHEN 'orange' THEN 4 ELSE 5 END", 'ASC')
-      .addOrderBy('wine.name', 'ASC')
-      .skip(skip).take(limit);
+    switch (filter.sortBy) {
+      case 'price_asc':    qb.orderBy('wine.price', 'ASC').addOrderBy('wine.name', 'ASC'); break;
+      case 'price_desc':   qb.orderBy('wine.price', 'DESC').addOrderBy('wine.name', 'ASC'); break;
+      case 'vintage_desc': qb.orderBy('wine.vintage', 'DESC').addOrderBy('wine.name', 'ASC'); break;
+      case 'vintage_asc':  qb.orderBy('wine.vintage', 'ASC').addOrderBy('wine.name', 'ASC'); break;
+      case 'name_asc':     qb.orderBy('wine.name', 'ASC'); break;
+      case 'rating_desc':  qb.orderBy('wine.avgRating', 'DESC').addOrderBy('wine.name', 'ASC'); break;
+      default:
+        qb.orderBy("CASE wine.color WHEN 'red' THEN 1 WHEN 'rose' THEN 2 WHEN 'white' THEN 3 WHEN 'orange' THEN 4 ELSE 5 END", 'ASC')
+          .addOrderBy('wine.name', 'ASC');
+    }
+    qb.skip(skip).take(limit);
 
     const [items, total] = await qb.getManyAndCount();
 
@@ -104,6 +113,8 @@ export class WinesService {
       region: wine.region,
       vintage: wine.vintage,
       stock: wine.stock,
+      avgRating: Number(wine.avgRating) || 0,
+      reviewCount: wine.reviewCount || 0,
       createdAt: wine.createdAt.toISOString(),
       updatedAt: wine.updatedAt.toISOString(),
     };
