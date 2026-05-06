@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from './user.entity';
 import { RoleRequest, RoleRequestStatus } from './role-request.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class UsersService {
@@ -11,6 +12,7 @@ export class UsersService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(RoleRequest)
     private readonly roleRequestRepo: Repository<RoleRequest>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findById(id: string): Promise<User | null> {
@@ -153,6 +155,19 @@ export class UsersService {
       }
     }
 
-    return this.roleRequestRepo.save(req) as Promise<RoleRequest>;
+    const saved = await this.roleRequestRepo.save(req) as RoleRequest;
+
+    const approved = status === 'APPROVED';
+    await this.notificationsService.create({
+      userId: req.userId,
+      type: approved ? 'ROLE_REQUEST_APPROVED' : 'ROLE_REQUEST_DENIED',
+      title: approved ? 'Role Request Approved' : 'Role Request Denied',
+      body: approved
+        ? `Your request for the ${req.requestedRole} role has been approved. Your new role is now active.`
+        : `Your request for the ${req.requestedRole} role has been denied.`,
+      link: null,
+    });
+
+    return saved;
   }
 }

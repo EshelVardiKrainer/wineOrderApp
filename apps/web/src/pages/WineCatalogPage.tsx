@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import type { IWineListResponse, IWine, WineColor } from '@wine-order-app/shared-types';
-import { api } from '../api/client';
+import type { IWineListResponse, IWine, WineColor, WineSortBy } from '@wine-order-app/shared-types';
+import { api, wishlistApi } from '../api/client';
 import { useAuthStore } from '../stores/auth.store';
 import { useCartStore } from '../stores/cart.store';
-import { MapPin, Search, Wine as WineIcon } from 'lucide-react';
+import { MapPin, Search, Wine as WineIcon, Heart } from 'lucide-react';
+import { StarRating } from '../components/StarRating';
 import type { ReactNode } from 'react';
 
 const ColorDot = ({ color }: { color: string }) => (
@@ -17,6 +18,16 @@ const COLOR_OPTIONS: { value: WineColor | ''; label: string; icon: ReactNode }[]
   { value: 'rose', label: 'Rosé', icon: <ColorDot color="#c4517a" /> },
   { value: 'white', label: 'White', icon: <ColorDot color="#c09848" /> },
   { value: 'orange', label: 'Orange', icon: <ColorDot color="#c86030" /> },
+];
+
+const SORT_OPTIONS: { value: WineSortBy | ''; label: string }[] = [
+  { value: '', label: 'Default' },
+  { value: 'price_asc', label: 'Price: Low → High' },
+  { value: 'price_desc', label: 'Price: High → Low' },
+  { value: 'vintage_desc', label: 'Newest Vintage' },
+  { value: 'vintage_asc', label: 'Oldest Vintage' },
+  { value: 'name_asc', label: 'Name A → Z' },
+  { value: 'rating_desc', label: 'Top Rated' },
 ];
 
 const WINE_META: Record<string, { label: string; dot: string }> = {
@@ -43,35 +54,40 @@ export function WineCatalogPage() {
   const [search, setSearch] = useState('');
   const [region, setRegion] = useState('');
   const [color, setColor] = useState<WineColor | ''>('');
+  const [sortBy, setSortBy] = useState<WineSortBy | ''>('');
   const [addingId, setAddingId] = useState<string | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [regions, setRegions] = useState<string[]>([]);
   const [regionOpen, setRegionOpen] = useState(false);
+  const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const regionRef = useRef<HTMLDivElement>(null);
   const user = useAuthStore((s) => s.user);
   const addItem = useCartStore((s) => s.addItem);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (regionRef.current && !regionRef.current.contains(e.target as Node)) {
-        setRegionOpen(false);
-      }
+      if (regionRef.current && !regionRef.current.contains(e.target as Node)) setRegionOpen(false);
     };
     const onScroll = () => setRegionOpen(false);
     document.addEventListener('mousedown', handler);
     document.addEventListener('scroll', onScroll, true);
-    return () => {
-      document.removeEventListener('mousedown', handler);
-      document.removeEventListener('scroll', onScroll, true);
-    };
+    return () => { document.removeEventListener('mousedown', handler); document.removeEventListener('scroll', onScroll, true); };
   }, []);
 
   useEffect(() => {
     api.get<IWineListResponse>('/wines?limit=100').then((res) => {
-      const unique = Array.from(new Set(res.items.map((w) => w.region))).sort();
-      setRegions(unique);
+      setRegions(Array.from(new Set(res.items.map((w) => w.region))).sort());
     });
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      wishlistApi.getIds().then((ids) => setWishlistIds(new Set(ids))).catch(() => {});
+    } else {
+      setWishlistIds(new Set());
+    }
+  }, [user]);
 
   const fetchWines = async () => {
     const params = new URLSearchParams();
@@ -80,21 +96,37 @@ export function WineCatalogPage() {
     if (search) params.set('search', search);
     if (region) params.set('region', region);
     if (color) params.set('color', color);
+    if (sortBy) params.set('sortBy', sortBy);
     const res = await api.get<IWineListResponse>(`/wines?${params}`);
     setWines(res.items);
     setTotal(res.total);
   };
 
-  useEffect(() => { fetchWines(); }, [page, search, region, color]);
+  useEffect(() => { fetchWines(); }, [page, search, region, color, sortBy]);
 
   const getQty = (id: string) => quantities[id] ?? 1;
-  const setQty = (id: string, val: number) =>
-    setQuantities((q) => ({ ...q, [id]: Math.max(1, Math.min(val, 99)) }));
+  const setQty = (id: string, val: number) => setQuantities((q) => ({ ...q, [id]: Math.max(1, Math.min(val, 99)) }));
 
   const handleAddToCart = async (wine: IWine) => {
     setAddingId(wine.id);
     await addItem({ wineId: wine.id, quantity: getQty(wine.id) });
     setTimeout(() => setAddingId(null), 700);
+  };
+
+  const handleToggleWishlist = async (wineId: string) => {
+    if (!user || togglingId) return;
+    setTogglingId(wineId);
+    try {
+      if (wishlistIds.has(wineId)) {
+        await wishlistApi.remove(wineId);
+        setWishlistIds((s) => { const n = new Set(s); n.delete(wineId); return n; });
+      } else {
+        await wishlistApi.add(wineId);
+        setWishlistIds((s) => new Set(s).add(wineId));
+      }
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   return (
@@ -141,25 +173,32 @@ export function WineCatalogPage() {
                 </div>
               )}
             </div>
-            <span className="catalog-hero-count">
-              {total} wine{total !== 1 ? 's' : ''}
-            </span>
+            <span className="catalog-hero-count">{total} wine{total !== 1 ? 's' : ''}</span>
           </div>
         </div>
       </div>
 
-      {/* ── Color Filter Pills ── */}
-      <div className="filter-pills">
-        {COLOR_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            className={`filter-pill ${color === opt.value ? 'filter-pill--active' : ''}`}
-            onClick={() => { setColor(opt.value); setPage(1); }}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-          >
-            {opt.icon} {opt.label}
-          </button>
-        ))}
+      {/* ── Filters + Sort Row ── */}
+      <div className="catalog-filter-row">
+        <div className="filter-pills">
+          {COLOR_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              className={`filter-pill ${color === opt.value ? 'filter-pill--active' : ''}`}
+              onClick={() => { setColor(opt.value); setPage(1); }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            >
+              {opt.icon} {opt.label}
+            </button>
+          ))}
+        </div>
+        <select
+          className="catalog-sort-select"
+          value={sortBy}
+          onChange={(e) => { setSortBy(e.target.value as WineSortBy | ''); setPage(1); }}
+        >
+          {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
       </div>
 
       {/* ── Wine Grid ── */}
@@ -173,15 +212,18 @@ export function WineCatalogPage() {
               }
               {WINE_META[wine.color] && (
                 <span className="wine-card-image-label">
-                  <span style={{
-                    width: 6, height: 6,
-                    borderRadius: '50%',
-                    background: WINE_META[wine.color].dot,
-                    display: 'inline-block',
-                    border: '1px solid rgba(255,255,255,0.5)',
-                  }}/>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: WINE_META[wine.color].dot, display: 'inline-block', border: '1px solid rgba(255,255,255,0.5)' }}/>
                   {WINE_META[wine.color].label}
                 </span>
+              )}
+              {user && (
+                <button
+                  className={`wine-card-wishlist${wishlistIds.has(wine.id) ? ' wine-card-wishlist--active' : ''}`}
+                  onClick={(e) => { e.preventDefault(); handleToggleWishlist(wine.id); }}
+                  aria-label={wishlistIds.has(wine.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                >
+                  <Heart size={14} fill={wishlistIds.has(wine.id) ? 'currentColor' : 'none'} />
+                </button>
               )}
             </div>
 
@@ -191,26 +233,26 @@ export function WineCatalogPage() {
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                 </svg>
-                {wine.region} ·{' '}
-                <span className="vintage">{wine.vintage}</span>
+                {wine.region} · <span className="vintage">{wine.vintage}</span>
               </p>
+
+              {wine.reviewCount > 0 && (
+                <div className="wine-card-rating">
+                  <StarRating value={Math.round(wine.avgRating)} size={12} />
+                  <span className="wine-card-rating-text">{wine.avgRating.toFixed(1)} ({wine.reviewCount})</span>
+                </div>
+              )}
+
               <p className="price">₪{wine.price.toFixed(2)}</p>
               <p className="wine-description">{wine.description}</p>
 
               <div className="wine-card-footer">
                 <span className="wine-stock" style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 5,
+                  display: 'flex', alignItems: 'center', gap: 5,
                   color: wine.stock > 10 ? 'var(--success-700)' : wine.stock > 0 ? 'var(--warning-700)' : 'var(--danger-700)',
                   fontWeight: 600,
                 }}>
-                  <span style={{
-                    width: 6, height: 6,
-                    borderRadius: '50%',
-                    background: wine.stock > 10 ? 'var(--success-500)' : wine.stock > 0 ? 'var(--warning-500)' : 'var(--danger-500)',
-                    display: 'inline-block',
-                  }}/>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: wine.stock > 10 ? 'var(--success-500)' : wine.stock > 0 ? 'var(--warning-500)' : 'var(--danger-500)', display: 'inline-block' }}/>
                   {wine.stock > 0 ? `${wine.stock} in stock` : 'Out of stock'}
                 </span>
                 {user && wine.stock > 0 && (
@@ -226,21 +268,10 @@ export function WineCatalogPage() {
                       disabled={addingId === wine.id}
                       style={addingId === wine.id ? { background: 'var(--success-700)', boxShadow: 'none' } : {}}
                     >
-                    {addingId === wine.id ? (
-                      <>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        Added
-                      </>
-                    ) : (
-                      <>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                        </svg>
-                        Add to Cart
-                      </>
-                    )}
+                      {addingId === wine.id
+                        ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Added</>
+                        : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add to Cart</>
+                      }
                     </button>
                   </div>
                 )}
@@ -260,15 +291,9 @@ export function WineCatalogPage() {
 
       {total > 20 && (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
-          <button className="btn btn--secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-            ← Previous
-          </button>
-          <span className="text-muted text-sm" style={{ fontWeight: 600 }}>
-            Page {page} of {Math.ceil(total / 20)}
-          </span>
-          <button className="btn btn--secondary" disabled={page >= Math.ceil(total / 20)} onClick={() => setPage((p) => p + 1)}>
-            Next →
-          </button>
+          <button className="btn btn--secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>← Previous</button>
+          <span className="text-muted text-sm" style={{ fontWeight: 600 }}>Page {page} of {Math.ceil(total / 20)}</span>
+          <button className="btn btn--secondary" disabled={page >= Math.ceil(total / 20)} onClick={() => setPage((p) => p + 1)}>Next →</button>
         </div>
       )}
     </div>

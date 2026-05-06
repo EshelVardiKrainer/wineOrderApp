@@ -11,6 +11,7 @@ import { GroupOrder } from './entities/group-order.entity';
 import { GroupOrderParticipant } from './entities/group-order-participant.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { CartService } from '../cart/cart.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import type {
   IGroupOrder,
   IGroupOrderCreate,
@@ -33,6 +34,7 @@ export class GroupOrdersService {
     @InjectRepository(OrderItem)
     private readonly orderItemRepo: Repository<OrderItem>,
     private readonly cartService: CartService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   // ─── Admin: open a new group order for a site ───────────────────────
@@ -63,11 +65,31 @@ export class GroupOrdersService {
   }
 
   async submitGroupOrder(id: string): Promise<IGroupOrder> {
-    return this.updateStatus(id, 'closed', 'submitted');
+    const go = await this.updateStatus(id, 'closed', 'submitted');
+    const userIds = go.participants.map((p) => p.userId);
+    if (userIds.length) {
+      await this.notificationsService.createForUsers(userIds, {
+        type: 'GROUP_ORDER_SUBMITTED',
+        title: 'Order Submitted to Supplier',
+        body: `Your group order at ${go.shippingSite.name} has been submitted. We'll notify you when it ships.`,
+        link: `/group-orders/${go.id}`,
+      });
+    }
+    return go;
   }
 
   async markShipped(id: string): Promise<IGroupOrder> {
-    return this.updateStatus(id, 'submitted', 'shipped');
+    const go = await this.updateStatus(id, 'submitted', 'shipped');
+    const userIds = go.participants.map((p) => p.userId);
+    if (userIds.length) {
+      await this.notificationsService.createForUsers(userIds, {
+        type: 'GROUP_ORDER_SHIPPED',
+        title: 'Your Wine Is on the Way!',
+        body: `Your order from ${go.shippingSite.name} has shipped. See you at pickup!`,
+        link: `/group-orders/${go.id}`,
+      });
+    }
+    return go;
   }
 
   // ─── User: enroll in a group order ──────────────────────────────────

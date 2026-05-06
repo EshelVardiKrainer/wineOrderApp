@@ -134,6 +134,7 @@ export function GroupOrdersPage() {
               (sum, p) => sum + p.orderItems.reduce((s, i) => s + i.quantity * i.unitPrice, 0),
               0,
             );
+            const minimumReached = go.minimumAmount <= 0 || totalValue >= go.minimumAmount;
             return (
               <div key={go.id} className="group-order-card">
                 <div className="group-order-card-header">
@@ -178,17 +179,11 @@ export function GroupOrdersPage() {
                     </div>
                   </div>
                   <div className="group-order-card-meta-item">
-                    <div className="meta-label">Minimum</div>
-                    <div className="meta-value">
-                      {go.minimumAmount > 0 ? `₪${go.minimumAmount.toLocaleString()}` : <span className="text-muted">None</span>}
+                    <div className="meta-label">Total Value</div>
+                    <div className="meta-value" style={{ color: 'var(--wine-700)', fontWeight: 700 }}>
+                      {totalValue > 0 ? `₪${totalValue.toFixed(0)}` : <span className="text-muted">—</span>}
                     </div>
                   </div>
-                  {totalValue > 0 && (
-                    <div className="group-order-card-meta-item">
-                      <div className="meta-label">Total Value</div>
-                      <div className="meta-value" style={{ color: 'var(--wine-700)' }}>₪{totalValue.toFixed(2)}</div>
-                    </div>
-                  )}
                   <div className="group-order-card-meta-item">
                     <div className="meta-label">Created</div>
                     <div className="meta-value text-muted" style={{ fontSize: '0.85rem', fontWeight: 500 }}>
@@ -196,6 +191,25 @@ export function GroupOrdersPage() {
                     </div>
                   </div>
                 </div>
+
+                {go.minimumAmount > 0 && (
+                  <div className="group-order-card-progress">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: '0.78rem' }}>
+                      <span style={{ fontWeight: 600, color: minimumReached ? 'var(--success-700)' : 'var(--warning-700)' }}>
+                        {minimumReached ? '✓ Minimum reached' : 'Working towards minimum'}
+                      </span>
+                      <span style={{ color: 'var(--gray-500)', fontWeight: 600 }}>
+                        ₪{totalValue.toFixed(0)} / ₪{go.minimumAmount.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="progress-bar" style={{ height: 6 }}>
+                      <div
+                        className={`progress-bar__fill ${minimumReached ? 'progress-bar__fill--success' : 'progress-bar__fill--warning'}`}
+                        style={{ width: `${Math.min(100, go.minimumAmount > 0 ? (totalValue / go.minimumAmount) * 100 : 0)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <div className="group-order-card-footer">
                   <Link to={`/group-orders/${go.id}`} className="btn btn--secondary btn--small">

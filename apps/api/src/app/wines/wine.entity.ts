@@ -37,6 +37,12 @@ export class Wine {
   @Column('int', { default: 0 })
   stock!: number;
 
+  @Column('float', { default: 0 })
+  avgRating!: number;
+
+  @Column('int', { default: 0 })
+  reviewCount!: number;
+
   @CreateDateColumn()
   createdAt!: Date;
 
