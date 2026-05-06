@@ -40,6 +40,8 @@ export class CartService {
         region: item.wine.region,
         vintage: item.wine.vintage,
         stock: item.wine.stock,
+        avgRating: Number(item.wine.avgRating) || 0,
+        reviewCount: item.wine.reviewCount || 0,
         createdAt: item.wine.createdAt.toISOString(),
         updatedAt: item.wine.updatedAt.toISOString(),
       },
