@@ -6,6 +6,7 @@ import type { IShippingSite, IGroupOrder, IGroupOrderParticipant } from '@wine-o
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PayPalCheckout } from '../components/PayPalCheckout';
+import { ShoppingCart, Users, X, Check } from 'lucide-react';
 
 export function CartPage() {
   const { t } = useTranslation();
@@ -66,7 +67,7 @@ export function CartPage() {
 
       {cart.items.length === 0 ? (
         <div className="empty-state" style={{ background: 'white', borderRadius: 'var(--radius-xl)', border: '1px solid var(--gray-200)', boxShadow: 'var(--shadow-card)' }}>
-          <span className="empty-state-icon">🛒</span>
+          <span className="empty-state-icon"><ShoppingCart size={40} strokeWidth={1.5} /></span>
           <h3>{t('cart.empty')}</h3>
           <p>{t('cart.emptyDesc')}</p>
           <Link to="/wines" className="btn btn--primary btn--large" style={{ marginTop: '1.5rem' }}>
@@ -115,7 +116,7 @@ export function CartPage() {
                               justifyContent: 'center',
                               fontSize: '1.1rem',
                             }}>
-                              🍷
+                              <ShoppingCart size={16} style={{ opacity: 0.8 }} />
                             </div>
                             <div>
                               <div style={{ fontWeight: 700, color: 'var(--gray-900)', fontSize: '0.9rem' }}>{item.wine.name}</div>
@@ -162,7 +163,7 @@ export function CartPage() {
                               (e.currentTarget as HTMLButtonElement).style.color = 'var(--danger-500)';
                             }}
                           >
-                            ✕
+                            <X size={14} />
                           </button>
                         </td>
                       </tr>
@@ -184,7 +185,7 @@ export function CartPage() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '1.1rem',
-                }}>🤝</div>
+                }}><Users size={20} /></div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1rem' }}>{t('cart.enrollTitle')}</h3>
                   <p className="text-muted text-sm" style={{ marginTop: 2 }}>
@@ -212,13 +213,13 @@ export function CartPage() {
               {openGroupOrder && (
                 <div>
                   <div className="info-box info-box--success" style={{ marginBottom: 'var(--space-md)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: '1.1rem' }}>✅</span>
+                    <Check size={18} style={{ color: 'var(--success-700)', flexShrink: 0 }} />
                     <div>
                       <strong>{t('cart.groupOrderFound', { count: openGroupOrder.participants.length })}</strong>
                     </div>
                   </div>
                   <button className="btn btn--success" disabled={enrolling} onClick={handleEnroll} style={{ minWidth: 180 }}>
-                    {enrolling ? t('cart.enrolling') : `✓ ${t('cart.enrollSubmit')}`}
+                    {enrolling ? t('cart.enrolling') : <><Check size={14} style={{ marginRight: 4 }} />{t('cart.enrollSubmit')}</>}
                   </button>
                 </div>
               )}
@@ -275,7 +276,7 @@ export function CartPage() {
                 <h2>{t('cart.paymentTitle')}</h2>
                 <p>{t('cart.paymentNote')}</p>
               </div>
-              <button className="payment-modal-close" onClick={() => setShowPayment(false)}>✕</button>
+              <button className="payment-modal-close" onClick={() => setShowPayment(false)}><X size={18} /></button>
             </div>
             <div className="payment-modal-body">
               <div className="payment-modal-summary">

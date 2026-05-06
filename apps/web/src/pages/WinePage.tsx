@@ -5,12 +5,13 @@ import { api } from '../api/client';
 import { useAuthStore } from '../stores/auth.store';
 import { useCartStore } from '../stores/cart.store';
 import { useTranslation } from 'react-i18next';
+import { Wine as WineIcon, MapPin, Calendar, ShoppingCart, CheckCircle, XCircle, Frown } from 'lucide-react';
 
-const COLOR_BADGE: Record<string, { bg: string; text: string; label: string }> = {
-  red: { bg: '#fde8e8', text: '#b91c1c', label: '🌹 Red' },
-  rose: { bg: '#fce7f3', text: '#be185d', label: '🦩 Rosé' },
-  white: { bg: '#f0fdf4', text: '#15803d', label: '⚪️ White' },
-  orange: { bg: '#fff7ed', text: '#c2410c', label: '🐅 Orange' },
+const COLOR_BADGE: Record<string, { bg: string; text: string; dot: string; label: string }> = {
+  red:    { bg: '#fde8e8', text: '#b91c1c', dot: '#8a2038', label: 'Red' },
+  rose:   { bg: '#fce7f3', text: '#be185d', dot: '#c4517a', label: 'Rosé' },
+  white:  { bg: '#f0fdf4', text: '#15803d', dot: '#c09848', label: 'White' },
+  orange: { bg: '#fff7ed', text: '#c2410c', dot: '#c86030', label: 'Orange' },
 };
 
 export function WinePage() {
@@ -72,7 +73,7 @@ export function WinePage() {
   if (loading) {
     return (
       <div className="animate-in" style={{ textAlign: 'center', padding: '3rem 0' }}>
-        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🍷</div>
+        <div style={{ fontSize: '2rem', marginBottom: '1rem', color: 'var(--wine-400)' }}><WineIcon size={40} strokeWidth={1.5} /></div>
         <p>{t('wine.loading')}</p>
       </div>
     );
@@ -81,7 +82,7 @@ export function WinePage() {
   if (error || !wine) {
     return (
       <div className="animate-in" style={{ textAlign: 'center', padding: '3rem 0' }}>
-        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>😞</div>
+        <div style={{ fontSize: '2rem', marginBottom: '1rem', color: 'var(--gray-400)' }}><Frown size={40} strokeWidth={1.5} /></div>
         <h2>{t('wine.notFound')}</h2>
         <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
           {error || t('wine.notFoundDesc')}
@@ -140,12 +141,11 @@ export function WinePage() {
               borderRadius: '0.5rem',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 'clamp(2rem, 8vw, 4rem)',
               color: '#9ca3af',
               margin: '0 auto',
             }}
           >
-            🍷
+            <WineIcon size={64} strokeWidth={1} />
           </div>
         </div>
 
@@ -158,10 +158,13 @@ export function WinePage() {
               style={{
                 background: COLOR_BADGE[wine.color].bg,
                 color: COLOR_BADGE[wine.color].text,
-                display: 'inline-block',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
                 marginBottom: '1rem',
               }}
             >
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: COLOR_BADGE[wine.color].dot, display: 'inline-block' }} />
               {COLOR_BADGE[wine.color].label}
             </span>
           )}
@@ -187,9 +190,9 @@ export function WinePage() {
             color: '#6b7280',
             flexWrap: 'wrap'
           }}>
-            <span>📍 {wine.region}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><MapPin size={14} /> {wine.region}</span>
             <span>•</span>
-            <span>📅 {wine.vintage}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Calendar size={14} /> {wine.vintage}</span>
           </div>
 
           {/* Price */}
@@ -212,7 +215,10 @@ export function WinePage() {
                 fontSize: 'clamp(0.9rem, 2.5vw, 1rem)'
               }}
             >
-              {wine.stock > 0 ? `✅ ${wine.stock} in stock` : '❌ Out of stock'}
+              {wine.stock > 0
+                ? <><CheckCircle size={15} style={{ verticalAlign: 'middle', marginRight: 4 }} />{wine.stock} in stock</>
+                : <><XCircle size={15} style={{ verticalAlign: 'middle', marginRight: 4 }} />Out of stock</>
+              }
             </span>
           </div>
 
@@ -314,7 +320,10 @@ export function WinePage() {
                   minWidth: '200px'
                 }}
               >
-                {addingToCart ? `✅ ${t('wine.addedToCart')}` : `🛒 ${t('wine.addToCart', { count: quantity })}`}
+                {addingToCart
+                  ? <><CheckCircle size={16} style={{ marginRight: 6 }} />{t('wine.addedToCart')}</>
+                  : <><ShoppingCart size={16} style={{ marginRight: 6 }} />{t('wine.addToCart', { count: quantity })}</>
+                }
               </button>
               <Link to="/cart" className="btn btn--secondary">
                 {t('wine.viewCart')}

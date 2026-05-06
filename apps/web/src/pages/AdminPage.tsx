@@ -1,4 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
+import type { ReactNode } from 'react';
+import { Package, Wine as WineIcon, Truck, Users as UsersIcon, Zap, Key, MapPin } from 'lucide-react';
 import { api, usersApi, roleRequestsApi } from '../api/client';
 import { useAuthStore } from '../stores/auth.store';
 import type {
@@ -19,12 +21,12 @@ export function AdminPage() {
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   const [tab, setTab] = useState<'orders' | 'wines' | 'sites' | 'users'>('orders');
 
-  const TABS = [
-    { id: 'orders', label: 'Orders', icon: '📦' },
-    { id: 'wines',  label: 'Wines',  icon: '🍷' },
-    { id: 'sites',  label: 'Shipping Sites', icon: '🚚' },
-    ...(isSuperAdmin ? [{ id: 'users', label: 'Users', icon: '👥' }] : []),
-  ] as const;
+  const TABS: { id: 'orders' | 'wines' | 'sites' | 'users'; label: string; icon: ReactNode }[] = [
+    { id: 'orders', label: 'Orders',         icon: <Package size={15} /> },
+    { id: 'wines',  label: 'Wines',          icon: <WineIcon size={15} /> },
+    { id: 'sites',  label: 'Shipping Sites', icon: <Truck size={15} /> },
+    ...(isSuperAdmin ? [{ id: 'users' as const, label: 'Users', icon: <UsersIcon size={15} /> }] : []),
+  ];
 
   return (
     <div className="animate-in">
@@ -45,7 +47,10 @@ export function AdminPage() {
           fontWeight: 700,
           color: isSuperAdmin ? 'var(--wine-700)' : 'var(--info-700)',
         }}>
-          {isSuperAdmin ? '⚡ Super Admin' : '🔑 Admin'}
+          {isSuperAdmin
+            ? <><Zap size={13} /> Super Admin</>
+            : <><Key size={13} /> Admin</>
+          }
         </div>
       </div>
 
@@ -55,6 +60,7 @@ export function AdminPage() {
             key={t.id}
             className={`tab-item ${tab === t.id ? 'tab-item--active' : ''}`}
             onClick={() => setTab(t.id as typeof tab)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
           >
             {t.icon} {t.label}
           </button>
@@ -145,7 +151,7 @@ function OrdersAdmin() {
 
       {siteGroups.length === 0 ? (
         <div className="empty-state">
-          <span className="empty-state-icon">📦</span>
+          <span className="empty-state-icon"><Package size={40} strokeWidth={1.5} /></span>
           <h3>No orders found</h3>
           <p>Try adjusting your status filter.</p>
         </div>
@@ -162,8 +168,8 @@ function OrdersAdmin() {
               gap: 'var(--space-md)',
             }}>
               <div style={{ color: 'white' }}>
-                <h3 style={{ margin: 0, fontSize: '1.05rem', color: 'white', fontFamily: 'var(--font-display)' }}>
-                  📍 {sg.site.name}
+                <h3 style={{ margin: 0, fontSize: '1.05rem', color: 'white', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <MapPin size={14} style={{ opacity: 0.7 }} /> {sg.site.name}
                 </h3>
                 <p style={{ margin: '2px 0 0', fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)' }}>
                   {sg.site.address}, {sg.site.city}
@@ -357,10 +363,10 @@ function WinesAdmin() {
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label>Color</label>
               <select value={form.color || 'red'} onChange={(e) => setForm({ ...form, color: e.target.value as WineColor })}>
-                <option value="red">🌹 Red</option>
-                <option value="rose">🦩 Rosé</option>
-                <option value="white">⚪️ White</option>
-                <option value="orange">🐅 Orange</option>
+                <option value="red">Red</option>
+                <option value="rose">Rosé</option>
+                <option value="white">White</option>
+                <option value="orange">Orange</option>
               </select>
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
@@ -412,7 +418,15 @@ function WinesAdmin() {
             {wines.map((w) => (
               <tr key={w.id}>
                 <td style={{ fontWeight: 600, color: 'var(--gray-900)' }}>{w.name}</td>
-                <td>{w.color === 'red' ? '🌹' : w.color === 'rose' ? '🦩' : w.color === 'white' ? '⚪️' : '🐅'}</td>
+                <td>
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.8rem', fontWeight: 600,
+                    color: w.color === 'red' ? '#8a2038' : w.color === 'rose' ? '#c4517a' : w.color === 'white' ? '#7a6428' : '#c86030',
+                  }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: w.color === 'red' ? '#8a2038' : w.color === 'rose' ? '#c4517a' : w.color === 'white' ? '#c09848' : '#c86030', display: 'inline-block' }} />
+                    {w.color.charAt(0).toUpperCase() + w.color.slice(1)}
+                  </span>
+                </td>
                 <td className="text-muted">{w.region}</td>
                 <td>{w.vintage}</td>
                 <td style={{ fontWeight: 600, color: 'var(--wine-700)' }}>₪{w.price.toFixed(2)}</td>

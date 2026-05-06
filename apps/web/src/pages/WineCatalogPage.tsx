@@ -4,13 +4,19 @@ import type { IWineListResponse, IWine, WineColor } from '@wine-order-app/shared
 import { api } from '../api/client';
 import { useAuthStore } from '../stores/auth.store';
 import { useCartStore } from '../stores/cart.store';
+import { MapPin, Search, Wine as WineIcon } from 'lucide-react';
+import type { ReactNode } from 'react';
 
-const COLOR_OPTIONS: { value: WineColor | ''; label: string; emoji: string }[] = [
-  { value: '', label: 'All Wines', emoji: '🍷' },
-  { value: 'red', label: 'Red', emoji: '🌹' },
-  { value: 'rose', label: 'Rosé', emoji: '🦩' },
-  { value: 'white', label: 'White', emoji: '🥂' },
-  { value: 'orange', label: 'Orange', emoji: '🍊' },
+const ColorDot = ({ color }: { color: string }) => (
+  <span style={{ width: 10, height: 10, borderRadius: '50%', background: color, display: 'inline-block', flexShrink: 0 }} />
+);
+
+const COLOR_OPTIONS: { value: WineColor | ''; label: string; icon: ReactNode }[] = [
+  { value: '', label: 'All Wines', icon: <WineIcon size={13} /> },
+  { value: 'red', label: 'Red', icon: <ColorDot color="#8a2038" /> },
+  { value: 'rose', label: 'Rosé', icon: <ColorDot color="#c4517a" /> },
+  { value: 'white', label: 'White', icon: <ColorDot color="#c09848" /> },
+  { value: 'orange', label: 'Orange', icon: <ColorDot color="#c86030" /> },
 ];
 
 const WINE_META: Record<string, { label: string; dot: string }> = {
@@ -102,7 +108,7 @@ export function WineCatalogPage() {
             <input
               className="catalog-hero-input"
               type="text"
-              placeholder="🔍  Search by name, producer, style..."
+              placeholder="Search by name, producer, style..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
@@ -112,14 +118,17 @@ export function WineCatalogPage() {
                 className="catalog-hero-input region-dropdown-trigger"
                 onClick={() => setRegionOpen((o) => !o)}
               >
-                <span>📍  {region || 'All regions'}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5, flex: 1 }}>
+                  <MapPin size={14} style={{ flexShrink: 0, opacity: 0.7 }} />
+                  {region || 'All regions'}
+                </span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6, flexShrink: 0, transform: regionOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
               </button>
               {regionOpen && (
                 <div className="region-dropdown-menu">
-                  {[{ value: '', label: '📍  All regions' }, ...regions.map((r) => ({ value: r, label: r }))].map((opt) => (
+                  {[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))].map((opt) => (
                     <button
                       key={opt.value}
                       type="button"
@@ -146,8 +155,9 @@ export function WineCatalogPage() {
             key={opt.value}
             className={`filter-pill ${color === opt.value ? 'filter-pill--active' : ''}`}
             onClick={() => { setColor(opt.value); setPage(1); }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
           >
-            {opt.emoji} {opt.label}
+            {opt.icon} {opt.label}
           </button>
         ))}
       </div>
@@ -242,7 +252,7 @@ export function WineCatalogPage() {
 
       {wines.length === 0 && (
         <div className="empty-state">
-          <span className="empty-state-icon">🔍</span>
+          <span className="empty-state-icon"><Search size={40} strokeWidth={1.5} /></span>
           <h3>No wines found</h3>
           <p>Try adjusting your search or filters to find what you're looking for.</p>
         </div>
