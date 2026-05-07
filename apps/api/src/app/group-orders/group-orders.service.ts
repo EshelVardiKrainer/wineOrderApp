@@ -414,6 +414,7 @@ export class GroupOrdersService {
       role: p.user.role,
       createdAt: p.user.createdAt.toISOString(),
       updatedAt: p.user.updatedAt.toISOString(),
+      lastActiveAt: p.user.lastActiveAt ? p.user.lastActiveAt.toISOString() : null,
     },
     enrolledAt: p.enrolledAt.toISOString(),
     orderItems: (p.orderItems ?? []).map(this.toOrderItemDto),
