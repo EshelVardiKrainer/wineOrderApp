@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useSearchParams } from 'react-router-dom';
 import type { IWineListResponse, IWine, WineColor, WineSortBy } from '@wine-order-app/shared-types';
 import { api, wishlistApi } from '../api/client';
@@ -59,6 +60,8 @@ export function WineCatalogPage() {
   const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const regionRef = useRef<HTMLDivElement>(null);
+  const regionTriggerRef = useRef<HTMLButtonElement>(null);
+  const [regionMenuStyle, setRegionMenuStyle] = useState<React.CSSProperties>({});
   const user = useAuthStore((s) => s.user);
   const addItem = useCartStore((s) => s.addItem);
   const toast = useToast();
@@ -82,7 +85,10 @@ export function WineCatalogPage() {
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (regionRef.current && !regionRef.current.contains(e.target as Node)) setRegionOpen(false);
+      const target = e.target as Node;
+      const inTrigger = regionRef.current?.contains(target);
+      const inMenu = (target as Element).closest?.('.region-dropdown-menu');
+      if (!inTrigger && !inMenu) setRegionOpen(false);
     };
     const onScroll = () => setRegionOpen(false);
     document.addEventListener('mousedown', handler);
@@ -164,9 +170,16 @@ export function WineCatalogPage() {
             />
             <div ref={regionRef} className="region-dropdown">
               <button
+                ref={regionTriggerRef}
                 type="button"
                 className="catalog-hero-input region-dropdown-trigger"
-                onClick={() => setRegionOpen((o) => !o)}
+                onClick={() => {
+                  if (!regionOpen && regionTriggerRef.current) {
+                    const r = regionTriggerRef.current.getBoundingClientRect();
+                    setRegionMenuStyle({ position: 'fixed', top: r.bottom + 6, left: r.left, minWidth: r.width });
+                  }
+                  setRegionOpen((o) => !o);
+                }}
               >
                 <span style={{ display: 'flex', alignItems: 'center', gap: 5, flex: 1 }}>
                   <MapPin size={14} style={{ flexShrink: 0, opacity: 0.7 }} />
@@ -176,21 +189,22 @@ export function WineCatalogPage() {
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
               </button>
-              {regionOpen && (
-                <div className="region-dropdown-menu">
-                  {[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))].map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      className={`region-dropdown-item${region === opt.value ? ' region-dropdown-item--active' : ''}`}
-                      onClick={() => { setRegion(opt.value); setRegionOpen(false); }}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
+            {regionOpen && createPortal(
+              <div className="region-dropdown-menu" style={regionMenuStyle}>
+                {[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={`region-dropdown-item${region === opt.value ? ' region-dropdown-item--active' : ''}`}
+                    onClick={() => { setRegion(opt.value); setRegionOpen(false); }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>,
+              document.body
+            )}
             <span className="catalog-hero-count">{total} wine{total !== 1 ? 's' : ''}</span>
           </div>
         </div>
