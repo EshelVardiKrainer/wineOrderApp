@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import type { IWineListResponse, IWine, WineColor, WineSortBy } from '@wine-order-app/shared-types';
 import { api, wishlistApi } from '../api/client';
 import { useAuthStore } from '../stores/auth.store';
 import { useCartStore } from '../stores/cart.store';
 import { MapPin, Search, Wine as WineIcon, Heart } from 'lucide-react';
 import { StarRating } from '../components/StarRating';
+import { useToast } from '../components/Toast';
 import type { ReactNode } from 'react';
 
 const ColorDot = ({ color }: { color: string }) => (
@@ -48,13 +49,9 @@ const WineGlass = () => (
 );
 
 export function WineCatalogPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [wines, setWines] = useState<IWine[]>([]);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [region, setRegion] = useState('');
-  const [color, setColor] = useState<WineColor | ''>('');
-  const [sortBy, setSortBy] = useState<WineSortBy | ''>('');
   const [addingId, setAddingId] = useState<string | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [regions, setRegions] = useState<string[]>([]);
@@ -64,6 +61,24 @@ export function WineCatalogPage() {
   const regionRef = useRef<HTMLDivElement>(null);
   const user = useAuthStore((s) => s.user);
   const addItem = useCartStore((s) => s.addItem);
+  const toast = useToast();
+
+  const page   = Number(searchParams.get('page') || '1');
+  const search = searchParams.get('search') || '';
+  const region = searchParams.get('region') || '';
+  const color  = (searchParams.get('color') || '') as WineColor | '';
+  const sortBy = (searchParams.get('sortBy') || '') as WineSortBy | '';
+
+  const setPage   = (p: number | ((prev: number) => number)) =>
+    setSearchParams((prev) => { const n = new URLSearchParams(prev); n.set('page', String(typeof p === 'function' ? p(page) : p)); return n; }, { replace: true });
+  const setSearch = (v: string) =>
+    setSearchParams((prev) => { const n = new URLSearchParams(prev); v ? n.set('search', v) : n.delete('search'); n.set('page', '1'); return n; }, { replace: true });
+  const setRegion = (v: string) =>
+    setSearchParams((prev) => { const n = new URLSearchParams(prev); v ? n.set('region', v) : n.delete('region'); n.set('page', '1'); return n; }, { replace: true });
+  const setColor  = (v: WineColor | '') =>
+    setSearchParams((prev) => { const n = new URLSearchParams(prev); v ? n.set('color', v) : n.delete('color'); n.set('page', '1'); return n; }, { replace: true });
+  const setSortBy = (v: WineSortBy | '') =>
+    setSearchParams((prev) => { const n = new URLSearchParams(prev); v ? n.set('sortBy', v) : n.delete('sortBy'); n.set('page', '1'); return n; }, { replace: true });
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -110,6 +125,7 @@ export function WineCatalogPage() {
   const handleAddToCart = async (wine: IWine) => {
     setAddingId(wine.id);
     await addItem({ wineId: wine.id, quantity: getQty(wine.id) });
+    toast(`Added ${getQty(wine.id)}× ${wine.name} to cart`);
     setTimeout(() => setAddingId(null), 700);
   };
 
@@ -120,9 +136,11 @@ export function WineCatalogPage() {
       if (wishlistIds.has(wineId)) {
         await wishlistApi.remove(wineId);
         setWishlistIds((s) => { const n = new Set(s); n.delete(wineId); return n; });
+        toast('Removed from wishlist', 'info');
       } else {
         await wishlistApi.add(wineId);
         setWishlistIds((s) => new Set(s).add(wineId));
+        toast('Added to wishlist');
       }
     } finally {
       setTogglingId(null);

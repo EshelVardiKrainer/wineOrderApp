@@ -17,6 +17,8 @@ import { RoleRequestPage } from '../pages/RoleRequestPage';
 import { PaymentSuccessPage } from '../pages/PaymentSuccessPage';
 import { PaymentCancelPage } from '../pages/PaymentCancelPage';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+import { WishlistPage } from '../pages/WishlistPage';
+import { ToastProvider } from '../components/Toast';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -30,6 +32,7 @@ export function App() {
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <ToastProvider>
       <Navbar />
       <div className="container">
         <Routes>
@@ -96,9 +99,18 @@ export function App() {
           />
 
           <Route path="/" element={<HomePage />} />
+          <Route
+            path="/wishlist"
+            element={
+              <ProtectedRoute>
+                <WishlistPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
       <Footer />
+      </ToastProvider>
     </GoogleOAuthProvider>
   );
 }

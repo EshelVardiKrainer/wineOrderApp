@@ -93,6 +93,11 @@ export function Navbar() {
           {t('nav.myOrders')}
         </Link>
       )}
+      {user && (
+        <Link to="/wishlist" className={isActive('/wishlist') ? 'active' : ''} onClick={() => setMenuOpen(false)}>
+          Wishlist
+        </Link>
+      )}
       {isAdminOrSuper && (
         <Link to="/admin" className={isActive('/admin') ? 'active' : ''} style={{ position: 'relative' }} onClick={() => setMenuOpen(false)}>
           {t('nav.admin')}

@@ -7,6 +7,7 @@ import { useCartStore } from '../stores/cart.store';
 import { useTranslation } from 'react-i18next';
 import { Wine as WineIcon, MapPin, Calendar, ShoppingCart, CheckCircle, XCircle, Frown, Heart, Trash2 } from 'lucide-react';
 import { StarRating } from '../components/StarRating';
+import { useToast } from '../components/Toast';
 
 const COLOR_BADGE: Record<string, { bg: string; text: string; dot: string; label: string }> = {
   red:    { bg: '#fde8e8', text: '#b91c1c', dot: '#8a2038', label: 'Red' },
@@ -56,6 +57,7 @@ export function WinePage() {
 
   const user = useAuthStore((s) => s.user);
   const addItem = useCartStore((s) => s.addItem);
+  const toast = useToast();
 
   useEffect(() => {
     if (!id) { navigate('/wines'); return; }
@@ -97,9 +99,11 @@ export function WinePage() {
       if (inWishlist) {
         await wishlistApi.remove(wine.id);
         setInWishlist(false);
+        toast('Removed from wishlist', 'info');
       } else {
         await wishlistApi.add(wine.id);
         setInWishlist(true);
+        toast('Added to wishlist');
       }
     } finally {
       setTogglingWishlist(false);
@@ -110,6 +114,7 @@ export function WinePage() {
     if (!wine) return;
     setAddingToCart(true);
     await addItem({ wineId: wine.id, quantity });
+    toast(`Added ${quantity}× ${wine.name} to cart`);
     setTimeout(() => setAddingToCart(false), 1000);
   };
 
@@ -128,6 +133,7 @@ export function WinePage() {
       const summary = await reviewsApi.getForWine(id);
       setReviewSummary(summary);
       if (wine) setWine({ ...wine, avgRating: summary.avgRating, reviewCount: summary.count });
+      toast(myReview ? 'Review updated' : 'Review submitted');
     } finally {
       setSubmittingReview(false);
     }
@@ -144,6 +150,7 @@ export function WinePage() {
       const summary = await reviewsApi.getForWine(id);
       setReviewSummary(summary);
       if (wine) setWine({ ...wine, avgRating: summary.avgRating, reviewCount: summary.count });
+      toast('Review deleted', 'info');
     } finally {
       setDeletingReview(false);
     }

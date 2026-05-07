@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { useAuthStore } from '../stores/auth.store';
 
@@ -15,12 +15,14 @@ export function LoginPage() {
   const isLoading = useAuthStore((s) => s.isLoading);
   const error = useAuthStore((s) => s.error);
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: string })?.from || '/wines';
 
   const handleGoogleSuccess = async (response: CredentialResponse) => {
     if (response.credential) {
       await googleLogin(response.credential);
       const user = useAuthStore.getState().user;
-      if (user) navigate('/wines');
+      if (user) navigate(from, { replace: true });
     }
   };
 
