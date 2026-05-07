@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { Package, Wine as WineIcon, Truck, Users as UsersIcon, Zap, Key, MapPin } from 'lucide-react';
+import { Package, Wine as WineIcon, Truck, Users as UsersIcon, Zap, Key, MapPin, Pencil, X } from 'lucide-react';
 import { api, usersApi, roleRequestsApi } from '../api/client';
 import { useAuthStore } from '../stores/auth.store';
 import type {
@@ -279,20 +279,88 @@ function OrdersAdmin() {
 
 // ─── Wines Admin ───────────────────────────────────────────────────
 
+const EMPTY_CREATE: IWineCreate = { name: '', color: 'red', description: '', price: 0, region: '', vintage: 2024, stock: 0 };
+
+function WineForm({
+  title, values, onChange, onImageChange, imagePreview, onSubmit, submitLabel, onCancel,
+}: {
+  title: string;
+  values: IWineCreate;
+  onChange: (v: IWineCreate) => void;
+  onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  imagePreview: string | null;
+  onSubmit: (e: React.FormEvent) => void;
+  submitLabel: string;
+  onCancel: () => void;
+}) {
+  return (
+    <form onSubmit={onSubmit} className="section-panel" style={{ marginBottom: 'var(--space-lg)', background: 'var(--gray-50)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
+        <strong style={{ fontSize: '0.95rem', color: 'var(--gray-800)' }}>{title}</strong>
+        <button type="button" className="btn btn--ghost btn--small" onClick={onCancel}><X size={14} /></button>
+      </div>
+      <div className="form-grid-2">
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label>Name</label>
+          <input value={values.name} onChange={(e) => onChange({ ...values, name: e.target.value })} required />
+        </div>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label>Region</label>
+          <input value={values.region} onChange={(e) => onChange({ ...values, region: e.target.value })} required />
+        </div>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label>Color</label>
+          <select value={values.color || 'red'} onChange={(e) => onChange({ ...values, color: e.target.value as WineColor })}>
+            <option value="red">Red</option>
+            <option value="rose">Rosé</option>
+            <option value="white">White</option>
+            <option value="orange">Orange</option>
+          </select>
+        </div>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label>Price (₪)</label>
+          <input type="number" step="0.01" value={values.price} onChange={(e) => onChange({ ...values, price: Number(e.target.value) })} required />
+        </div>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label>Vintage</label>
+          <input type="number" value={values.vintage} onChange={(e) => onChange({ ...values, vintage: Number(e.target.value) })} required />
+        </div>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label>Stock</label>
+          <input type="number" value={values.stock} onChange={(e) => onChange({ ...values, stock: Number(e.target.value) })} required />
+        </div>
+        <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
+          <label>Description</label>
+          <input value={values.description} onChange={(e) => onChange({ ...values, description: e.target.value })} placeholder="A brief description of the wine..." />
+        </div>
+        <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
+          <label>Image <span style={{ fontWeight: 400, color: 'var(--gray-500)' }}>(optional, max 5 MB)</span></label>
+          <input type="file" accept="image/*" onChange={onImageChange} />
+          {imagePreview && (
+            <img src={imagePreview} alt="preview" style={{ marginTop: 8, height: 100, borderRadius: 8, objectFit: 'contain', border: '1px solid var(--gray-200)' }} />
+          )}
+        </div>
+      </div>
+      <div style={{ marginTop: 'var(--space-lg)', display: 'flex', gap: 'var(--space-sm)' }}>
+        <button className="btn btn--success" type="submit">{submitLabel}</button>
+        <button type="button" className="btn btn--secondary" onClick={onCancel}>Cancel</button>
+      </div>
+    </form>
+  );
+}
+
 function WinesAdmin() {
   const [wines, setWines] = useState<IWine[]>([]);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<IWineCreate>({
-    name: '',
-    color: 'red',
-    description: '',
-    price: 0,
-    region: '',
-    vintage: 2024,
-    stock: 0,
-  });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState<IWineCreate>(EMPTY_CREATE);
+  const [createImageFile, setCreateImageFile] = useState<File | null>(null);
+  const [createImagePreview, setCreateImagePreview] = useState<string | null>(null);
+
+  const [editingWine, setEditingWine] = useState<IWine | null>(null);
+  const [editForm, setEditForm] = useState<IWineCreate>(EMPTY_CREATE);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+
   const [error, setError] = useState('');
 
   const fetchWines = async () => {
@@ -302,103 +370,95 @@ function WinesAdmin() {
 
   useEffect(() => { fetchWines(); }, []);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null;
-    setImageFile(file);
-    setImagePreview(file ? URL.createObjectURL(file) : null);
+  const startEdit = (wine: IWine) => {
+    setEditingWine(wine);
+    setEditForm({ name: wine.name, color: wine.color, description: wine.description, price: wine.price, region: wine.region, vintage: wine.vintage, stock: wine.stock });
+    setEditImageFile(null);
+    setEditImagePreview(wine.imageUrl ?? null);
+    setShowCreate(false);
   };
+
+  const cancelEdit = () => { setEditingWine(null); setEditImagePreview(null); };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     try {
-      const wine = await api.post<IWine>('/wines', form);
-      if (imageFile) {
+      const wine = await api.post<IWine>('/wines', createForm);
+      if (createImageFile) {
         const fd = new FormData();
-        fd.append('image', imageFile);
+        fd.append('image', createImageFile);
         await api.upload<IWine>(`/wines/${wine.id}/image`, fd);
       }
-      setForm({ name: '', color: 'red', description: '', price: 0, region: '', vintage: 2024, stock: 0 });
-      setImageFile(null);
-      setImagePreview(null);
-      setShowForm(false);
+      setCreateForm(EMPTY_CREATE);
+      setCreateImageFile(null);
+      setCreateImagePreview(null);
+      setShowCreate(false);
       fetchWines();
-    } catch (err: any) {
-      setError(err.message);
-    }
+    } catch (err: any) { setError(err.message); }
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingWine) return;
+    setError('');
+    try {
+      await api.patch<IWine>(`/wines/${editingWine.id}`, editForm);
+      if (editImageFile) {
+        const fd = new FormData();
+        fd.append('image', editImageFile);
+        await api.upload<IWine>(`/wines/${editingWine.id}/image`, fd);
+      }
+      cancelEdit();
+      fetchWines();
+    } catch (err: any) { setError(err.message); }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this wine?')) return;
     await api.delete(`/wines/${id}`);
+    if (editingWine?.id === id) cancelEdit();
     fetchWines();
   };
+
+  const COLOR_DOT: Record<string, string> = { red: '#8a2038', rose: '#c4517a', white: '#c09848', orange: '#c86030' };
+  const COLOR_TEXT: Record<string, string> = { red: '#8a2038', rose: '#c4517a', white: '#7a6428', orange: '#c86030' };
 
   return (
     <>
       <div className="section-header">
         <h2>Wines ({wines.length})</h2>
-        <button className="btn btn--primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Cancel' : '+ Add Wine'}
+        <button className="btn btn--primary" onClick={() => { setShowCreate(!showCreate); cancelEdit(); }}>
+          {showCreate ? 'Cancel' : '+ Add Wine'}
         </button>
       </div>
 
       {error && <div className="error-msg">{error}</div>}
 
-      {showForm && (
-        <form
+      {showCreate && (
+        <WineForm
+          title="New Wine"
+          values={createForm}
+          onChange={setCreateForm}
+          onImageChange={(e) => { const f = e.target.files?.[0] ?? null; setCreateImageFile(f); setCreateImagePreview(f ? URL.createObjectURL(f) : null); }}
+          imagePreview={createImagePreview}
           onSubmit={handleCreate}
-          className="section-panel"
-          style={{ marginBottom: 'var(--space-lg)', background: 'var(--gray-50)' }}
-        >
-          <div className="form-grid-2">
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label>Name</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label>Region</label>
-              <input value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} required />
-            </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label>Color</label>
-              <select value={form.color || 'red'} onChange={(e) => setForm({ ...form, color: e.target.value as WineColor })}>
-                <option value="red">Red</option>
-                <option value="rose">Rosé</option>
-                <option value="white">White</option>
-                <option value="orange">Orange</option>
-              </select>
-            </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label>Price (₪)</label>
-              <input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} required />
-            </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label>Vintage</label>
-              <input type="number" value={form.vintage} onChange={(e) => setForm({ ...form, vintage: Number(e.target.value) })} required />
-            </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label>Stock</label>
-              <input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} required />
-            </div>
-            <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-              <label>Description</label>
-              <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="A brief description of the wine..." />
-            </div>
-            <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-              <label>Image <span style={{ fontWeight: 400, color: 'var(--gray-500)' }}>(optional, max 5 MB)</span></label>
-              <input type="file" accept="image/*" onChange={handleImageChange} />
-              {imagePreview && (
-                <div style={{ marginTop: 8 }}>
-                  <img src={imagePreview} alt="preview" style={{ height: 120, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--gray-200)' }} />
-                </div>
-              )}
-            </div>
-          </div>
-          <div style={{ marginTop: 'var(--space-lg)' }}>
-            <button className="btn btn--success" type="submit">Create Wine</button>
-          </div>
-        </form>
+          submitLabel="Create Wine"
+          onCancel={() => setShowCreate(false)}
+        />
+      )}
+
+      {editingWine && (
+        <WineForm
+          title={`Editing: ${editingWine.name}`}
+          values={editForm}
+          onChange={setEditForm}
+          onImageChange={(e) => { const f = e.target.files?.[0] ?? null; setEditImageFile(f); setEditImagePreview(f ? URL.createObjectURL(f) : null); }}
+          imagePreview={editImagePreview}
+          onSubmit={handleUpdate}
+          submitLabel="Save Changes"
+          onCancel={cancelEdit}
+        />
       )}
 
       <div className="section-panel">
@@ -411,19 +471,16 @@ function WinesAdmin() {
               <th>Vintage</th>
               <th>Price</th>
               <th>Stock</th>
-              <th style={{ width: 80 }}></th>
+              <th style={{ width: 120 }}></th>
             </tr>
           </thead>
           <tbody>
             {wines.map((w) => (
-              <tr key={w.id}>
+              <tr key={w.id} style={editingWine?.id === w.id ? { background: 'var(--wine-50)' } : {}}>
                 <td style={{ fontWeight: 600, color: 'var(--gray-900)' }}>{w.name}</td>
                 <td>
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.8rem', fontWeight: 600,
-                    color: w.color === 'red' ? '#8a2038' : w.color === 'rose' ? '#c4517a' : w.color === 'white' ? '#7a6428' : '#c86030',
-                  }}>
-                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: w.color === 'red' ? '#8a2038' : w.color === 'rose' ? '#c4517a' : w.color === 'white' ? '#c09848' : '#c86030', display: 'inline-block' }} />
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.8rem', fontWeight: 600, color: COLOR_TEXT[w.color] }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: COLOR_DOT[w.color], display: 'inline-block' }} />
                     {w.color.charAt(0).toUpperCase() + w.color.slice(1)}
                   </span>
                 </td>
@@ -432,9 +489,18 @@ function WinesAdmin() {
                 <td style={{ fontWeight: 600, color: 'var(--wine-700)' }}>₪{w.price.toFixed(2)}</td>
                 <td>{w.stock}</td>
                 <td>
-                  <button className="btn btn--danger btn--small" onClick={() => handleDelete(w.id)}>
-                    Delete
-                  </button>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button
+                      className="btn btn--secondary btn--small"
+                      onClick={() => editingWine?.id === w.id ? cancelEdit() : startEdit(w)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                    >
+                      {editingWine?.id === w.id ? <><X size={12} /> Cancel</> : <><Pencil size={12} /> Edit</>}
+                    </button>
+                    <button className="btn btn--danger btn--small" onClick={() => handleDelete(w.id)}>
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

@@ -18,6 +18,7 @@ import { PaymentSuccessPage } from '../pages/PaymentSuccessPage';
 import { PaymentCancelPage } from '../pages/PaymentCancelPage';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { WishlistPage } from '../pages/WishlistPage';
+import { AccountPage } from '../pages/AccountPage';
 import { ToastProvider } from '../components/Toast';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
@@ -104,6 +105,14 @@ export function App() {
             element={
               <ProtectedRoute>
                 <WishlistPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <AccountPage />
               </ProtectedRoute>
             }
           />

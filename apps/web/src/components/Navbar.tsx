@@ -168,7 +168,7 @@ export function Navbar() {
 
         {user ? (
           <div className="nav-user nav-user--desktop">
-            <span className="nav-user-name">{user.name.split(' ')[0]}</span>
+            <Link to="/account" className="nav-user-name" style={{ textDecoration: 'none' }}>{user.name.split(' ')[0]}</Link>
             <button
               className="btn btn--ghost btn--small"
               style={{ color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.12)', fontSize: '0.8rem' }}

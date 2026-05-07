@@ -2376,3 +2376,167 @@ table tfoot td {
   gap: var(--space-xl);
   padding: var(--space-xl) 0;
 }
+
+/* ── Account Page ──────────────────────────────────────── */
+.account-hero {
+  background: linear-gradient(135deg, var(--wine-950) 0%, var(--wine-800) 60%, var(--wine-900) 100%);
+  padding: var(--space-2xl) var(--space-xl);
+  margin: calc(-1 * var(--space-xl)) calc(-1 * var(--space-xl)) 0;
+  color: white;
+}
+
+.account-hero-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  max-width: 860px;
+  flex-wrap: wrap;
+}
+
+.account-hero-info { flex: 1; min-width: 0; }
+
+.account-name {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  margin: 0 0 2px;
+  color: white;
+}
+
+.account-email {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.55);
+  margin: 0;
+}
+
+.account-signout {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255,255,255,0.55) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  font-size: 0.82rem !important;
+}
+
+.account-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  margin: var(--space-xl) 0;
+}
+@media (max-width: 640px) { .account-stats { grid-template-columns: 1fr 1fr; } }
+
+.account-stat-card {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-card);
+}
+.account-stat-card:hover { border-color: var(--wine-300); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+.account-stat-icon { color: var(--wine-600); margin-bottom: 4px; }
+.account-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--gray-900); font-family: var(--font-display); }
+.account-stat-label { font-size: 0.78rem; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.account-section { margin-bottom: var(--space-2xl); }
+
+.account-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+.account-section-header h2 { font-family: var(--font-display); font-size: 1.25rem; }
+.account-section-link {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 0.85rem; font-weight: 600; color: var(--wine-600);
+  text-decoration: none;
+}
+.account-section-link:hover { color: var(--wine-700); }
+
+.account-wishlist-preview {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.account-wishlist-item {
+  width: 140px;
+  text-decoration: none;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all 0.2s;
+}
+.account-wishlist-item:hover { border-color: var(--wine-300); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+.account-wishlist-thumb {
+  height: 100px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.account-wishlist-thumb--red    { background: linear-gradient(145deg, #1a0810 0%, #7a2038 100%); }
+.account-wishlist-thumb--rose   { background: linear-gradient(145deg, #200810 0%, #a04060 100%); }
+.account-wishlist-thumb--white  { background: linear-gradient(145deg, #201808 0%, #9a7030 100%); }
+.account-wishlist-thumb--orange { background: linear-gradient(145deg, #1e0e06 0%, #a04020 100%); }
+.account-wishlist-thumb img { width: 100%; height: 100%; object-fit: contain; padding: 6px; box-sizing: border-box; }
+
+.account-wishlist-name {
+  padding: 6px 8px 2px;
+  font-size: 0.8rem; font-weight: 600; color: var(--gray-900);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.account-wishlist-price {
+  padding: 0 8px 8px;
+  font-size: 0.78rem; font-weight: 700; color: var(--wine-700);
+}
+
+.account-wishlist-more {
+  width: 140px; height: 100px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px dashed var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem; font-weight: 700;
+  color: var(--gray-400);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.account-wishlist-more:hover { border-color: var(--wine-300); color: var(--wine-600); }
+
+.account-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.account-link-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.account-link-card:hover { border-color: var(--wine-300); background: var(--wine-50); }
+
+.account-link-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--wine-50);
+  color: var(--wine-600);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.account-link-label { font-weight: 600; font-size: 0.9rem; color: var(--gray-900); }
+.account-link-desc  { font-size: 0.8rem; color: var(--gray-500); }
