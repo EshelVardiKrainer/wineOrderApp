@@ -467,6 +467,7 @@ nav.main-nav .nav-cart-link:hover {
   margin-bottom: var(--space-xl);
   position: relative;
   isolation: isolate;
+  z-index: 20;
 }
 .catalog-hero::before {
   content: '';
