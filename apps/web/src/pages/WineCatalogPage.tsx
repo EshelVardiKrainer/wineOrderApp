@@ -160,7 +160,7 @@ export function WineCatalogPage() {
               type="text"
               placeholder="Search by name, producer, style..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              onChange={(e) => setSearch(e.target.value)}
             />
             <div ref={regionRef} className="region-dropdown">
               <button
@@ -183,7 +183,7 @@ export function WineCatalogPage() {
                       key={opt.value}
                       type="button"
                       className={`region-dropdown-item${region === opt.value ? ' region-dropdown-item--active' : ''}`}
-                      onClick={() => { setRegion(opt.value); setPage(1); setRegionOpen(false); }}
+                      onClick={() => { setRegion(opt.value); setRegionOpen(false); }}
                     >
                       {opt.label}
                     </button>
@@ -203,7 +203,7 @@ export function WineCatalogPage() {
             <button
               key={opt.value}
               className={`filter-pill ${color === opt.value ? 'filter-pill--active' : ''}`}
-              onClick={() => { setColor(opt.value); setPage(1); }}
+              onClick={() => setColor(opt.value)}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
             >
               {opt.icon} {opt.label}
@@ -213,7 +213,7 @@ export function WineCatalogPage() {
         <select
           className="catalog-sort-select"
           value={sortBy}
-          onChange={(e) => { setSortBy(e.target.value as WineSortBy | ''); setPage(1); }}
+          onChange={(e) => setSortBy(e.target.value as WineSortBy | '')}
         >
           {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
