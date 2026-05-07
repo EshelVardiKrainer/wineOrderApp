@@ -32,6 +32,7 @@ export class UsersController {
       avatarUrl: u.avatarUrl,
       createdAt: u.createdAt.toISOString(),
       updatedAt: u.updatedAt.toISOString(),
+      lastActiveAt: u.lastActiveAt ? u.lastActiveAt.toISOString() : null,
     }));
   }
 
@@ -51,6 +52,7 @@ export class UsersController {
       avatarUrl: user.avatarUrl,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
+      lastActiveAt: user.lastActiveAt ? user.lastActiveAt.toISOString() : null,
     };
   }
 

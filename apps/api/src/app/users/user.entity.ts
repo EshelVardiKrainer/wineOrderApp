@@ -31,6 +31,9 @@ export class User {
   @Column({ type: 'varchar', default: 'CUSTOMER' })
   role!: UserRole;
 
+  @Column({ type: 'timestamptz', nullable: true })
+  lastActiveAt!: Date | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 

@@ -77,6 +77,10 @@ export class UsersService {
     return this.userRepo.find({ order: { createdAt: 'DESC' } });
   }
 
+  touchLastActive(userId: string): void {
+    this.userRepo.update(userId, { lastActiveAt: new Date() }).catch(() => {});
+  }
+
   async updateRole(userId: string, newRole: UserRole): Promise<User> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');

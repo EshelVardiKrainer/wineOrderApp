@@ -8,4 +8,5 @@ export interface IUser {
   avatarUrl?: string | null;
   createdAt: string;
   updatedAt: string;
+  lastActiveAt: string | null;
 }

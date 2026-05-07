@@ -16,6 +16,18 @@ import type {
   UserRole,
 } from '@wine-order-app/shared-types';
 
+function formatLastActive(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 2) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
 export function AdminPage() {
   const user = useAuthStore((s) => s.user);
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
@@ -815,6 +827,7 @@ function UsersAdmin() {
               <th>Current Role</th>
               <th>Change Role</th>
               <th>Joined</th>
+              <th>Last Active</th>
             </tr>
           </thead>
           <tbody>
@@ -857,6 +870,9 @@ function UsersAdmin() {
                   )}
                 </td>
                 <td className="text-muted text-sm">{new Date(u.createdAt).toLocaleDateString()}</td>
+                <td className="text-muted text-sm">
+                  {u.lastActiveAt ? formatLastActive(u.lastActiveAt) : <span style={{ color: 'var(--gray-300)' }}>Never</span>}
+                </td>
               </tr>
             ))}
           </tbody>
