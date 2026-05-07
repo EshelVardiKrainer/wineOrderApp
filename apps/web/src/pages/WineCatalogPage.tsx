@@ -162,35 +162,6 @@ export function WineCatalogPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <div ref={regionRef} className="region-dropdown">
-              <button
-                type="button"
-                className="catalog-hero-input region-dropdown-trigger"
-                onClick={() => setRegionOpen((o) => !o)}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: 5, flex: 1 }}>
-                  <MapPin size={14} style={{ flexShrink: 0, opacity: 0.7 }} />
-                  {region || 'All regions'}
-                </span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6, flexShrink: 0, transform: regionOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
-              </button>
-              {regionOpen && (
-                <div className="region-dropdown-menu">
-                  {[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))].map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      className={`region-dropdown-item${region === opt.value ? ' region-dropdown-item--active' : ''}`}
-                      onClick={() => { setRegion(opt.value); setRegionOpen(false); }}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
             <span className="catalog-hero-count">{total} wine{total !== 1 ? 's' : ''}</span>
           </div>
         </div>
@@ -209,6 +180,35 @@ export function WineCatalogPage() {
               {opt.icon} {opt.label}
             </button>
           ))}
+        </div>
+        <div ref={regionRef} className="region-dropdown">
+          <button
+            type="button"
+            className={`catalog-sort-select region-dropdown-trigger${region ? ' region-dropdown-trigger--active' : ''}`}
+            onClick={() => setRegionOpen((o) => !o)}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, flex: 1 }}>
+              <MapPin size={13} style={{ flexShrink: 0, opacity: 0.6 }} />
+              {region || 'All regions'}
+            </span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5, flexShrink: 0, transform: regionOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          {regionOpen && (
+            <div className="region-dropdown-menu">
+              {[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  className={`region-dropdown-item${region === opt.value ? ' region-dropdown-item--active' : ''}`}
+                  onClick={() => { setRegion(opt.value); setRegionOpen(false); }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <select
           className="catalog-sort-select"
