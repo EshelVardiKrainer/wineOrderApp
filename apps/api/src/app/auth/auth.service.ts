@@ -63,6 +63,7 @@ export class AuthService {
         avatarUrl: user.avatarUrl,
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString(),
+        lastActiveAt: user.lastActiveAt ? user.lastActiveAt.toISOString() : null,
       },
     };
   }
