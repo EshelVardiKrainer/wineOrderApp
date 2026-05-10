@@ -1,5 +1,4 @@
-import { Controller } from '@nestjs/common';
-import { TypedRoute, TypedBody } from '@nestia/core';
+import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import type {
   IGoogleLoginRequest,
@@ -10,9 +9,9 @@ import type {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @TypedRoute.Post('google')
+  @Post('google')
   async googleLogin(
-    @TypedBody() input: IGoogleLoginRequest,
+    @Body() input: IGoogleLoginRequest,
   ): Promise<IAuthResponse> {
     return this.authService.googleLogin(input);
   }

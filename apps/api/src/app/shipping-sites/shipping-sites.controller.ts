@@ -1,5 +1,4 @@
-import { Controller, UseGuards } from '@nestjs/common';
-import { TypedRoute, TypedBody, TypedParam } from '@nestia/core';
+import { Controller, UseGuards, Get, Post, Patch, Delete, Body, Param } from '@nestjs/common';
 import { ShippingSitesService } from './shipping-sites.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -14,50 +13,44 @@ import type {
 export class ShippingSitesController {
   constructor(private readonly sitesService: ShippingSitesService) {}
 
-  /** Public — list active shipping sites */
-  @TypedRoute.Get()
+  @Get()
   async findAll(): Promise<IShippingSite[]> {
     return this.sitesService.findAll(true);
   }
 
-  /** Admin — list all shipping sites including inactive */
-  @TypedRoute.Get('all')
+  @Get('all')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   async findAllAdmin(): Promise<IShippingSite[]> {
     return this.sitesService.findAll(false);
   }
 
-  /** Public — get a single shipping site */
-  @TypedRoute.Get(':id')
-  async findOne(@TypedParam('id') id: string): Promise<IShippingSite> {
+  @Get(':id')
+  async findOne(@Param('id') id: string): Promise<IShippingSite> {
     return this.sitesService.findById(id);
   }
 
-  /** Admin — create a shipping site */
-  @TypedRoute.Post()
+  @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  async create(@TypedBody() input: IShippingSiteCreate): Promise<IShippingSite> {
+  async create(@Body() input: IShippingSiteCreate): Promise<IShippingSite> {
     return this.sitesService.create(input);
   }
 
-  /** Admin — update a shipping site */
-  @TypedRoute.Patch(':id')
+  @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   async update(
-    @TypedParam('id') id: string,
-    @TypedBody() input: IShippingSiteUpdate,
+    @Param('id') id: string,
+    @Body() input: IShippingSiteUpdate,
   ): Promise<IShippingSite> {
     return this.sitesService.update(id, input);
   }
 
-  /** Admin — delete a shipping site */
-  @TypedRoute.Delete(':id')
+  @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  async remove(@TypedParam('id') id: string): Promise<void> {
+  async remove(@Param('id') id: string): Promise<void> {
     return this.sitesService.remove(id);
   }
 }

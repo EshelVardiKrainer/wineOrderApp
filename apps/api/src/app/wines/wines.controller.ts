@@ -1,8 +1,7 @@
-import { Controller, UseGuards, Post, Param, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, UseGuards, Get, Post, Patch, Delete, Body, Param, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
-import { TypedRoute, TypedBody, TypedParam, TypedQuery } from '@nestia/core';
 import { WinesService } from './wines.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -19,27 +18,23 @@ import type {
 export class WinesController {
   constructor(private readonly winesService: WinesService) {}
 
-  /** Public — browse the wine catalog with filters */
-  @TypedRoute.Get()
-  async findAll(@TypedQuery() filter: IWineFilter): Promise<IWineListResponse> {
+  @Get()
+  async findAll(@Query() filter: IWineFilter): Promise<IWineListResponse> {
     return this.winesService.findAll(filter);
   }
 
-  /** Public — get a single wine by id */
-  @TypedRoute.Get(':id')
-  async findOne(@TypedParam('id') id: string): Promise<IWine> {
+  @Get(':id')
+  async findOne(@Param('id') id: string): Promise<IWine> {
     return this.winesService.findById(id);
   }
 
-  /** Admin — create a wine */
-  @TypedRoute.Post()
+  @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  async create(@TypedBody() input: IWineCreate): Promise<IWine> {
+  async create(@Body() input: IWineCreate): Promise<IWine> {
     return this.winesService.create(input);
   }
 
-  /** Admin — upload image for a wine */
   @Post(':id/image')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -66,22 +61,20 @@ export class WinesController {
     return this.winesService.update(id, { imageUrl });
   }
 
-  /** Admin — update a wine */
-  @TypedRoute.Patch(':id')
+  @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   async update(
-    @TypedParam('id') id: string,
-    @TypedBody() input: IWineUpdate,
+    @Param('id') id: string,
+    @Body() input: IWineUpdate,
   ): Promise<IWine> {
     return this.winesService.update(id, input);
   }
 
-  /** Admin — delete a wine */
-  @TypedRoute.Delete(':id')
+  @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  async remove(@TypedParam('id') id: string): Promise<void> {
+  async remove(@Param('id') id: string): Promise<void> {
     return this.winesService.remove(id);
   }
 }
