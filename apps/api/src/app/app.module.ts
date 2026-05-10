@@ -11,6 +11,7 @@ import { GroupOrdersModule } from './group-orders/group-orders.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ReviewsModule } from './reviews/reviews.module';
     NotificationsModule,
     WishlistModule,
     ReviewsModule,
+    PaymentsModule,
   ],
 })
 export class AppModule {}
