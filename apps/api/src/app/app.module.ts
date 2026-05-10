@@ -19,16 +19,23 @@ import { PaymentsModule } from './payments/payments.module';
 
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres' as const,
-        host: config.get<string>('DB_HOST', 'localhost'),
-        port: config.get<number>('DB_PORT', 5432),
-        username: config.get<string>('DB_USER', 'wine_user'),
-        password: config.get<string>('DB_PASS', 'wine_pass'),
-        database: config.get<string>('DB_NAME', 'wine_orders'),
-        autoLoadEntities: true,
-        synchronize: config.get<string>('NODE_ENV') !== 'production',
-      }),
+      useFactory: (config: ConfigService) => {
+        const databaseUrl = config.get<string>('DATABASE_URL');
+        return {
+          type: 'postgres' as const,
+          ...(databaseUrl
+            ? { url: databaseUrl, ssl: { rejectUnauthorized: false } }
+            : {
+                host: config.get<string>('DB_HOST', 'localhost'),
+                port: config.get<number>('DB_PORT', 5432),
+                username: config.get<string>('DB_USER', 'wine_user'),
+                password: config.get<string>('DB_PASS', 'wine_pass'),
+                database: config.get<string>('DB_NAME', 'wine_orders'),
+              }),
+          autoLoadEntities: true,
+          synchronize: config.get<string>('NODE_ENV') !== 'production',
+        };
+      },
       inject: [ConfigService],
     }),
 
